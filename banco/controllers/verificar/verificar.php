@@ -8,11 +8,11 @@ $conexion = new UsuarioDDBB();
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
-    if(isset($_GET["email"]) && $conexion->setActivo($_GET["email"], 1)) {
+    if(isset($_GET["email"]) && $conexion->setRol($_GET["email"], 1)) {
 
         echo "Verificación exitosa <br>";
         echo "Serás redirigido en 5 segundos...";
-        $_SESSION["mensaje"] = "<p id='success'>Usuario registrado correctamente</p>";
+        $_SESSION["mensaje"] = "<p id='success'>Usuario verificado correctamente</p>";
 
         header("Refresh: 5; URL=../../index.php");
         exit;
@@ -23,6 +23,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     }
 
 } else {
-    header("location: index.php");
+    header("location: ../../index.php");
     exit();
 }

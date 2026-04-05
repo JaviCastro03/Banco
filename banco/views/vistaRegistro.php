@@ -1,31 +1,63 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Banca Online</title>
+
+    <link rel="stylesheet" href="./views/styles/styles.css">
 </head>
 <body>
-    <h1>Registro</h1>
+
+<div class="container">
+
+    <div class="logo">🏦 BANKAPP</div>
+
+    <h1>Crear cuenta</h1>
+
     <?php
     if(isset($_SESSION["mensaje"])){
-        echo $_SESSION["mensaje"];
+        echo "<div class='mensaje'>" . $_SESSION["mensaje"] . "</div>";
         unset($_SESSION["mensaje"]);
     }
     ?>
-    <form method="POST" action="index.php"><br>
-        <input type="text" name="dni" placeholder="Dni"><br>
-        <input type="text" name="nombre" placeholder="Nombre"><br>
-        <input type="text" name="apellidos" placeholder="Apellidos"><br>
-        <input type="text" name="email" placeholder="Email"><br>
-        <input type="password" name="password" placeholder="Contraseña"><br>
-        <input type="password" name="cpassword" placeholder="Confirmar contraseña"><br>
-        <input type="submit" name="registrar" value="Registrar"><br>
+
+    <form method="POST" action="index.php" class="form-grid">
+
+        <div class="input-group">
+            <input type="text" name="dni" placeholder="DNI" required>
+        </div>
+
+        <div class="input-group">
+            <input type="text" name="nombre" placeholder="Nombre" required>
+        </div>
+
+        <div class="input-group">
+            <input type="text" name="apellidos" placeholder="Apellidos" required>
+        </div>
+
+        <div class="input-group">
+            <input type="email" name="email" placeholder="Correo electrónico" required>
+        </div>
+
+        <div class="input-group">
+            <input type="text" name="telefono" placeholder="Teléfono" required>
+        </div>
+
+        <div class="input-group">
+            <input type="password" name="password" placeholder="Contraseña" required>
+        </div>
+        <div class="full-width">
+            <input type="submit" name="registrar" value="Crear cuenta" class="btn">
+        </div>
+
     </form>
-    <form method="POST" action="index.php">
-        <input type="submit" name="login" value="¿Ya tienes una cuenta?">
+
+    <form method="POST" action="index.php" class="link">
+        <input type="submit" name="login" value="¿Ya tienes cuenta? Iniciar sesión">
     </form>
+
+</div>
+
 </body>
 </html>

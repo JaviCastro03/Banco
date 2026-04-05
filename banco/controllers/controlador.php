@@ -1,3 +1,4 @@
+
 <?php
 require_once "./models/ConexionDB.php";
 require_once "./models/UsuarioDDBB.php";
@@ -32,7 +33,6 @@ if ($_SESSION["ruta"] == "login") {
             exit;
         }
 
-        // ✅ CAMBIO AQUÍ
         $password = $conexion->getPasswordHash($_POST["email"]);
 
         if (!password_verify($_POST["password"], $password)) {
@@ -41,18 +41,24 @@ if ($_SESSION["ruta"] == "login") {
             exit;
         }
 
-        // 🚨 NO VERIFICADO (activo = 0 por ejemplo)
-        if (!$conexion->getIdUsuario($_POST["email"])) {
+        $rol = $conexion->getRol($_POST["email"]);
+
+        if ($rol == 0) {
             $_SESSION["mensaje"] = "Debes verificar tu correo";
             header("Location: index.php");
             exit;
         }
 
-        // login correcto
         $_SESSION["idU"] = $conexion->getIdUsuario($_POST["email"]);
         $_SESSION["nombre"] = $conexion->getNombreUsuario($_POST["email"]);
         $_SESSION["email"] = $_POST["email"];
-        $_SESSION["ruta"] = "dashboard";
+        $_SESSION["rol"] = $rol;
+
+        if ($rol == 2) {
+            $_SESSION["ruta"] = "admin";
+        } else {
+            $_SESSION["ruta"] = "dashboard";
+        }
 
         header("Location: index.php");
         exit;
@@ -78,6 +84,20 @@ if ($_SESSION["ruta"] == "dashboard") {
 }
 
 
+/* ======================================================
+                        ADMIN
+====================================================== */
+if ($_SESSION["ruta"] == "admin") {
+
+    if (!isset($_SESSION["idU"]) || ($_SESSION["rol"] ?? 0) != 2) {
+        $_SESSION["ruta"] = "login";
+        header("Location: index.php");
+        exit;
+    }
+
+    require_once "./views/vistaDashboardAdmin.php";
+}
+
 
 /* ======================================================
                         REGISTRO
@@ -98,8 +118,6 @@ if ($_SESSION["ruta"] == "registro") {
             exit;
         }
 
-        // ❌ ELIMINADO HASH AQUÍ (ya se hace en el modelo)
-
         if ($conexion->insertarUsuario(
             $_POST["dni"],
             $_POST["nombre"],
@@ -107,12 +125,11 @@ if ($_SESSION["ruta"] == "registro") {
             $_POST["email"],
             $_POST["telefono"] ?? '',
             $_POST["password"],
-            $_POST["direccion"] ?? null,
             $_POST["fecha_nacimiento"] ?? null
         )) {
 
             $mensaje = "Pulsa en el enlace para verificar tu cuenta:<br>
-            <a href='http://localhost/banco/controllers/verificar/verificar.php?email="
+            <a href='http://localhost/banco/banco/controllers/verificar/verificar.php?email="
                 . $_POST["email"] . "'>Verificar cuenta</a>";
 
             if (enviarCorreoGmail($_POST["email"], "Verificación de cuenta", $mensaje)) {

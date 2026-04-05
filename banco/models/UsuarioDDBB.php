@@ -1,3 +1,4 @@
+
 <?php
 class UsuarioDDBB {
 
@@ -20,14 +21,14 @@ class UsuarioDDBB {
         return $password === $cpassword;
     }
 
-    function insertarUsuario($dni, $nombre, $apellidos, $email, $telefono, $password, $direccion, $fecha_nacimiento, $foto_perfil = null){
+    function insertarUsuario($dni, $nombre, $apellidos, $email, $telefono, $password, $fecha_nacimiento = null){
 
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
         $sql="INSERT INTO usuarios 
-        (dni, nombre, apellidos, email, telefono, password_hash, direccion, fecha_nacimiento, foto_perfil, activo, created_at, updated_at) 
+        (dni, nombre, apellidos, email, telefono, password_hash, fecha_nacimiento, rol) 
         VALUES 
-        (:dni, :nombre, :apellidos, :email, :telefono, :password_hash, :direccion, :fecha_nacimiento, :foto_perfil, 1, NOW(), NOW())";
+        (:dni, :nombre, :apellidos, :email, :telefono, :password_hash, :fecha_nacimiento, 0)";
 
         $consulta=$this->conexion->prepare($sql);
 
@@ -37,9 +38,7 @@ class UsuarioDDBB {
         $consulta->bindParam(':email',$email);
         $consulta->bindParam(':telefono',$telefono);
         $consulta->bindParam(':password_hash',$password_hash);
-        $consulta->bindParam(':direccion',$direccion);
         $consulta->bindParam(':fecha_nacimiento',$fecha_nacimiento);
-        $consulta->bindParam(':foto_perfil',$foto_perfil);
 
         return $consulta->execute();
     }
@@ -54,15 +53,6 @@ class UsuarioDDBB {
             return $fila['password_hash'];
         }
         return null;
-    }
-
-    function verificarLogin($email, $password){
-        $hash = $this->getPasswordHash($email);
-
-        if($hash && password_verify($password, $hash)){
-            return true;
-        }
-        return false;
     }
 
     function getIdUsuario($email){
@@ -84,12 +74,16 @@ class UsuarioDDBB {
         return $stmt->fetchColumn();
     }
 
-    function setActivo($email, $activo){
-        $sql="UPDATE usuarios SET activo = :activo, updated_at = NOW() WHERE email = :email";
-        $consulta=$this->conexion->prepare($sql);
-        $consulta->bindParam(':email',$email);
-        $consulta->bindParam(':activo',$activo);
+    public function getRol($email){
+        $sql = "SELECT rol FROM usuarios WHERE email = ?";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$email]);
+        return $stmt->fetchColumn();
+    }
 
-        return $consulta->execute();
+    public function setRol($email, $rol){
+        $sql = "UPDATE usuarios SET rol = ? WHERE email = ?";
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([$rol, $email]);
     }
 }
