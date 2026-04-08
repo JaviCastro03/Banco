@@ -6,7 +6,7 @@
     <title>Acceso - EcoBank</title>
     <link rel="stylesheet" href="./views/styles/styles.css">
 </head>
-<body>
+<body class="login-body">
 <div class="container">
     <div class="logo-wrapper">
         <img src="./views/styles/logo.png" alt="EcoBank">
@@ -19,7 +19,7 @@
         unset($_SESSION["mensaje"]);
     }
     ?>
-    <form method="POST" action="index.php">
+    <form method="POST" action="index.php" class="login-form">
         <div class="input-group">
             <input type="email" name="email" placeholder="Correo electrónico" required>
         </div>

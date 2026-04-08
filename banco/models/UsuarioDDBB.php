@@ -21,28 +21,49 @@ class UsuarioDDBB {
         return $password === $cpassword;
     }
 
-    function insertarUsuario($dni, $nombre, $apellidos, $email, $telefono, $password, $fecha_nacimiento = null){
-
+    public function insertarUsuario(
+        $dni,
+        $nombre,
+        $apellidos,
+        $email,
+        $telefono,
+        $password,
+        $fecha_nacimiento,
+        $provincia,
+        $municipio,
+        $via,
+        $numero_piso
+    ) {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $sql="INSERT INTO usuarios 
-        (dni, nombre, apellidos, email, telefono, password_hash, fecha_nacimiento, rol) 
-        VALUES 
-        (:dni, :nombre, :apellidos, :email, :telefono, :password_hash, :fecha_nacimiento, 0)";
+        $sql = "INSERT INTO usuarios 
+    (dni, nombre, apellidos, email, telefono, password_hash, fecha_nacimiento, provincia, municipio, via, numero_piso,rol)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,0)";
 
-        $consulta=$this->conexion->prepare($sql);
+        $stmt = $this->conexion->prepare($sql);
 
-        $consulta->bindParam(':dni',$dni);
-        $consulta->bindParam(':nombre',$nombre);
-        $consulta->bindParam(':apellidos',$apellidos);
-        $consulta->bindParam(':email',$email);
-        $consulta->bindParam(':telefono',$telefono);
-        $consulta->bindParam(':password_hash',$password_hash);
-        $consulta->bindParam(':fecha_nacimiento',$fecha_nacimiento);
-
-        return $consulta->execute();
+        return $stmt->execute([
+            $dni,
+            $nombre,
+            $apellidos,
+            $email,
+            $telefono,
+            $password_hash,
+            $fecha_nacimiento,
+            $provincia,
+            $municipio,
+            $via,
+            $numero_piso
+        ]);
     }
+    function dniExiste($dni){
+        $sql = "SELECT id FROM usuarios WHERE dni = :dni";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->bindParam(':dni', $dni);
+        $consulta->execute();
 
+        return $consulta->rowCount() > 0;
+    }
     function getPasswordHash($email){
         $sql="SELECT password_hash FROM usuarios WHERE email = :email";
         $consulta=$this->conexion->prepare($sql);
@@ -85,5 +106,31 @@ class UsuarioDDBB {
         $sql = "UPDATE usuarios SET rol = ? WHERE email = ?";
         $stmt = $this->conexion->prepare($sql);
         return $stmt->execute([$rol, $email]);
+    }
+
+    public function getUsuarios($busqueda = "") {
+        if ($busqueda != "") {
+            $sql = "SELECT * FROM usuarios WHERE nombre LIKE ? OR email LIKE ?";
+            $stmt = $this->conexion->prepare($sql);
+            $like = "%$busqueda%";
+            $stmt->execute([$like, $like]);
+        } else {
+            $sql = "SELECT * FROM usuarios";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute();
+        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function actualizarUsuario($id, $nombre, $apellidos, $email, $telefono, $rol) {
+        $sql = "UPDATE usuarios SET nombre=?, apellidos=?, email=?, telefono=?, rol=? WHERE id=?";
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([$nombre, $apellidos, $email, $telefono, $rol, $id]);
+    }
+
+    public function eliminarUsuario($id) {
+        $sql = "DELETE FROM usuarios WHERE id=?";
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([$id]);
     }
 }

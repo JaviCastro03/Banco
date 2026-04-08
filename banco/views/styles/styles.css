@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap');
 
+/* =========================
+   RESET
+========================= */
 * {
     margin: 0;
     padding: 0;
@@ -7,105 +10,214 @@
     font-family: "DM Sans", sans-serif;
 }
 
+/* =========================
+   BODY (SIN SCROLL)
+========================= */
 body {
+    min-height: 100vh; /* 👈 NO height */
+    background: linear-gradient(135deg, #f5f0e8, #efe9df);
+    padding: 40px 20px;
+}
+
+/* =========================
+   CONTENEDOR
+========================= */
+.container {
+    width: 100%;
+    max-width: 750px;
+    background: rgba(250, 247, 242, 0.85);
+    backdrop-filter: blur(12px);
+    padding: 40px;
+    border-radius: 14px;
+    border: 1px solid rgba(224, 217, 206, 0.6);
+    color: #2c2a26;
+    text-align: center;
+    margin: 0 auto; /* 👈 centra sin flex */
+
+
+}
+td select {
+    width: 100%;
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+    background: #f3eee6;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+td select:focus {
+    background: #fff;
+    box-shadow: 0 0 0 1px #3a6b4a;
+}
+.direccion {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #555;
+}
+/* =========================
+   LOGIN CENTRADO
+========================= */
+.login-body {
     min-height: 100vh;
-    background: #f5f0e8;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.container {
-    width: 380px;
-    background: #faf7f2;
-    padding: 48px 40px;
-    border-radius: 4px;
-    border: 1px solid #e0d9ce;
-    color: #2c2a26;
-    text-align: center;
+.input-group {
+    margin-bottom: 15px;
 }
-
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+/* =========================
+   LOGO
+========================= */
 .logo-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 32px;
-    gap: 10px;
+    margin-bottom: 20px;
+    gap: 8px;
 }
 
 .logo-wrapper img {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
+    width: 50px;
+    height: 50px;
 }
 
 .logo-text {
     font-family: "Cormorant Garamond", serif;
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 18px;
     letter-spacing: 2px;
     color: #3a6b4a;
-    text-transform: uppercase;
 }
 
+/* =========================
+   TITULO
+========================= */
 .container h1 {
     font-family: "Cormorant Garamond", serif;
     font-size: 22px;
-    font-weight: 500;
-    color: #2c2a26;
-    margin-bottom: 28px;
-    letter-spacing: 0.5px;
+    margin-bottom: 20px;
 }
 
+/* =========================
+   GRID
+========================= */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* =========================
+   INPUTS
+========================= */
 .input-group {
-    margin: 10px 0;
+    position: relative;
 }
 
 .input-group input {
     width: 100%;
-    padding: 12px 14px;
-    border-radius: 2px;
-    border: 1px solid #d8d0c4;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    background: #f3eee6;
+    font-size: 13px;
     outline: none;
+    transition: all 0.25s ease;
+}
+
+.input-group input:focus {
     background: #fff;
-    color: #2c2a26;
-    font-size: 13.5px;
-    font-weight: 300;
-    letter-spacing: 0.2px;
-    transition: border-color 0.2s;
+    box-shadow:
+            0 6px 16px rgba(58,107,74,0.12),
+            0 0 0 1px #3a6b4a;
+}
+
+/* línea animada */
+.input-group::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0%;
+    height: 2px;
+    background: #3a6b4a;
+    transition: 0.3s;
+}
+
+.input-group:focus-within::after {
+    width: 100%;
+    left: 0;
 }
 
 .input-group input::placeholder {
     color: #a89f93;
 }
 
-.input-group input:focus {
-    border-color: #3a6b4a;
+/* =========================
+   FULL WIDTH
+========================= */
+.full-width {
+    grid-column: span 2;
 }
 
+/* =========================
+   BOTÓN
+========================= */
 .btn {
     width: 100%;
-    padding: 13px;
-    margin-top: 20px;
-    border-radius: 2px;
+    padding: 14px;
+    margin-top: 10px;
+    border-radius: 10px;
     border: none;
-    background: #3a6b4a;
-    color: #faf7f2;
+    background: linear-gradient(135deg, #3a6b4a, #2e5439);
+    color: #fff;
     font-size: 12px;
-    font-weight: 500;
     letter-spacing: 2px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: 0.3s;
 }
 
 .btn:hover {
-    background: #2e5439;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px rgba(58,107,74,0.25);
 }
 
+/* =========================
+   MENSAJES
+========================= */
+.mensaje {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    text-align: left;
+    border-left: 4px solid;
+}
+
+.success {
+    background: #eef7f1;
+    border-color: #3a6b4a;
+    color: #2e5439;
+}
+
+.error {
+    background: #fdf1f1;
+    border-color: #c0392b;
+}
+
+/* =========================
+   LINK
+========================= */
 .link {
-    margin-top: 20px;
-    font-size: 12.5px;
+    margin-top: 15px;
 }
 
 .link input {
@@ -113,56 +225,254 @@ body {
     border: none;
     color: #3a6b4a;
     cursor: pointer;
-    font-size: 12.5px;
-    font-weight: 400;
-    letter-spacing: 0.2px;
+    font-size: 12px;
     text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: #b8d4c0;
 }
 
-.link input:hover {
-    color: #2e5439;
-    text-decoration-color: #3a6b4a;
-}
-
-.mensaje {
-    margin-bottom: 20px;
-    padding: 11px 14px;
-    border-radius: 2px;
-    font-size: 13px;
-    text-align: left;
-    border-left: 2px solid;
-}
-
-.success {
-    background: #f0f7f2;
-    border-color: #3a6b4a;
-    color: #2e5439;
-}
-
-.error {
-    background: #fdf3f3;
-    border-color: #c0392b;
-    color: #922b21;
-}
-
+/* =========================
+   DIVIDER
+========================= */
 .divider {
     height: 1px;
     background: #e0d9ce;
-    margin: 20px 0 16px;
+    margin: 15px 0;
 }
 
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+/* =========================
+   ANIMACIONES
+========================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.form-grid .input-group {
-    margin: 0;
+
+/* =========================
+   ADMIN PANEL
+========================= */
+
+.admin-container {
+    width: 100%;
+    height: 100%;
+    padding: 40px 60px; /* espacio lateral elegante */
 }
 
-.full-width {
-    grid-column: span 2;
+/* título */
+.admin-container h1 {
+    color: #3a6b4a;
+    margin-bottom: 20px;
+    font-family: "Cormorant Garamond", serif;
+}
+
+/* buscador */
+#buscador {
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid #d8d0c4;
+    margin-bottom: 20px;
+    background: #faf7f2;
+    outline: none;
+    transition: 0.2s;
+}
+
+#buscador:focus {
+    border-color: #3a6b4a;
+    box-shadow: 0 0 0 2px rgba(58,107,74,0.15);
+}
+
+/* =========================
+   TABLA
+========================= */
+
+.tabla-container {
+    max-height: 420px;
+    overflow-y: auto;
+    border-radius: 10px;
+    border: 1px solid #e0d9ce;
+    background: #faf7f2;
+}
+
+/* scroll bonito */
+.tabla-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tabla-container::-webkit-scrollbar-thumb {
+    background: #c8c1b6;
+    border-radius: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* cabecera */
+th {
+    background: #3a6b4a;
+    color: white;
+    position: sticky;
+    top: 0;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+/* celdas */
+td, th {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eae4da;
+}
+
+/* filas hover */
+tr:hover {
+    background: #f3eee6;
+}
+
+/* =========================
+   INPUTS EN TABLA
+========================= */
+
+td input {
+    width: 100%;
+    padding: 6px;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    color: #2c2a26;
+    outline: none;
+}
+
+/* efecto edición */
+td input:focus {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px #3a6b4a;
+}
+
+/* =========================
+   BOTÓN ELIMINAR
+========================= */
+
+td button {
+    background: #c0392b;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+td button:hover {
+    background: #922b21;
+    transform: scale(1.05);
+}
+
+/* =========================
+   BOTÓN LOGOUT
+========================= */
+
+.admin-container form button {
+    margin-top: 20px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #3a6b4a;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.admin-container form button:hover {
+    background: #2e5439;
+}
+/* =========================
+   HEADER ADMIN
+========================= */
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+/* título */
+.admin-header h1 {
+    color: #3a6b4a;
+    font-family: "Cormorant Garamond", serif;
+}
+
+
+/* botón logout */
+.logout-btn {
+    background: #3a6b4a;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.logout-btn:hover {
+    background: #2e5439;
+    transform: translateY(-1px);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 15px;
+    }
+
+    td, th {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+
+/* =========================
+   SELECTS BONITOS
+========================= */
+.input-group select {
+    width: 100%;
+    padding: 16px;
+    border-radius: 8px;
+    border: none;
+    background: #f3eee6;
+    color: #2c2a26;
+    font-size: 14px;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* flechita moderna */
+.input-group select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='20' height='20' fill='%233a6b4a' viewBox='0 0 20 20'%3E%3Cpath d='M5 7l5 5 5-5H5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+}
+
+/* focus */
+.input-group select:focus {
+    background-color: #ffffff;
+    box-shadow:
+            0 8px 20px rgba(58,107,74,0.12),
+            0 0 0 1px #3a6b4a;
 }

@@ -9,7 +9,33 @@ use PHPMailer\PHPMailer\Exception;
 session_start();
 
 $conexion = new UsuarioDDBB();
+if (isset($_POST["ajax"])) {
 
+    if ($_POST["accion"] == "buscar") {
+        $usuarios = $conexion->getUsuarios($_POST["busqueda"]);
+        echo json_encode($usuarios);
+        exit;
+    }
+
+    if ($_POST["accion"] == "actualizar") {
+        $ok = $conexion->actualizarUsuario(
+            $_POST["id"],
+            $_POST["nombre"],
+            $_POST["apellidos"],
+            $_POST["email"],
+            $_POST["telefono"],
+            $_POST["rol"]
+        );
+        echo json_encode(["ok" => $ok]);
+        exit;
+    }
+
+    if ($_POST["accion"] == "eliminar") {
+        $ok = $conexion->eliminarUsuario($_POST["id"]);
+        echo json_encode(["ok" => $ok]);
+        exit;
+    }
+}
 if (!isset($_SESSION["ruta"])) {
     $_SESSION["ruta"] = "login";
 }
@@ -117,6 +143,11 @@ if ($_SESSION["ruta"] == "registro") {
             header("Location: index.php");
             exit;
         }
+        if ($conexion->dniExiste($_POST["dni"])) {
+            $_SESSION["mensaje"] = "El DNI ya está registrado";
+            header("Location: index.php");
+            exit;
+        }
 
         if ($conexion->insertarUsuario(
             $_POST["dni"],
@@ -125,7 +156,11 @@ if ($_SESSION["ruta"] == "registro") {
             $_POST["email"],
             $_POST["telefono"] ?? '',
             $_POST["password"],
-            $_POST["fecha_nacimiento"] ?? null
+            $_POST["fecha_nacimiento"] ?? null,
+            $_POST["provincia"],
+            $_POST["municipio"],
+            $_POST["calle"],
+            $_POST["numero_piso"]
         )) {
 
             $mensaje = "Pulsa en el enlace para verificar tu cuenta:<br>
