@@ -133,4 +133,25 @@ class UsuarioDDBB {
         $stmt = $this->conexion->prepare($sql);
         return $stmt->execute([$id]);
     }
+    public function getHistorialUsuario($usuario_id) {
+        $sql = "SELECT 
+                t.id,
+                t.tipo,
+                t.importe,
+                t.estado,
+                t.concepto,
+                t.fecha,
+                u.nombre,
+                u.apellidos
+            FROM transacciones t
+            JOIN cuentas c ON t.cuenta_origen_id = c.id
+            JOIN usuarios u ON c.usuario_id = u.id
+            WHERE u.id = ?
+            ORDER BY t.fecha DESC";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

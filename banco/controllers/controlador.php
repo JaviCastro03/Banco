@@ -35,20 +35,21 @@ if (isset($_POST["ajax"])) {
         echo json_encode(["ok" => $ok]);
         exit;
     }
+    if ($_POST["accion"] == "historial") {
+        $historial = $conexion->getHistorialUsuario($_POST["id"]);
+        echo json_encode($historial);
+        exit;
+    }
 }
 if (!isset($_SESSION["ruta"])) {
     $_SESSION["ruta"] = "login";
 }
 
-// navegación
 if (isset($_POST["dashboard"])) $_SESSION["ruta"] = "dashboard";
 if (isset($_POST["login"])) $_SESSION["ruta"] = "login";
 if (isset($_POST["registro"])) $_SESSION["ruta"] = "registro";
 
 
-/* ======================================================
-                        LOGIN
-====================================================== */
 if ($_SESSION["ruta"] == "login") {
 
     if (isset($_POST["iniciarSesion"])) {
