@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Admin - EcoBank</title>
     <link rel="stylesheet" href="./views/styles/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
 <body>
 
@@ -41,9 +42,7 @@
 
 <script>
 
-
     let filaEditando = null;
-
 
     function cargarUsuarios(busqueda = "") {
         fetch("index.php", {
@@ -79,13 +78,21 @@
                 </td>
 
                 <td>
-                    <div class="menu-acciones" onclick="event.stopPropagation()">
-                        <button class="btn-menu" onclick="toggleMenu(${u.id})">⋮</button>
+                    <div class="acciones" onclick="event.stopPropagation()">
 
-                        <div class="dropdown" id="menu-${u.id}">
-                            <div onclick="editar(${u.id})">Editar</div>
-                            <div onclick="eliminar(${u.id})"> Eliminar</div>
+                        <div class="menu-acciones">
+                            <button class="btn-menu" onclick="toggleMenu(${u.id})">⋮</button>
+
+                            <div class="dropdown" id="menu-${u.id}">
+                                <div onclick="editar(${u.id})">Editar</div>
+                                <div onclick="eliminar(${u.id})">Eliminar</div>
+                            </div>
                         </div>
+
+                        <button class="btn-guardar"  onclick="actualizar(${u.id})" title="Guardar">
+                            <i class="bi bi-floppy-fill"></i>
+                        </button>
+
                     </div>
                 </td>
             </tr>`;
@@ -95,8 +102,10 @@
             });
     }
 
-
     function editar(id) {
+
+
+        document.querySelectorAll(".dropdown").forEach(d => d.style.display = "none");
 
         let fila = document.querySelector(`#menu-${id}`).closest("tr");
 
@@ -111,10 +120,12 @@
         select.disabled = false;
 
         fila.classList.add("editando");
-
         filaEditando = fila;
-    }
 
+        // MOSTRAR BOTÓN GUARDAR
+        let btnGuardar = fila.querySelector(".btn-guardar");
+        btnGuardar.style.display = "inline-block";
+    }
 
     function bloquearFila(fila) {
         let inputs = fila.querySelectorAll("input");
@@ -124,8 +135,11 @@
         select.disabled = true;
 
         fila.classList.remove("editando");
-    }
 
+        // OCULTAR BOTÓN GUARDAR
+        let btnGuardar = fila.querySelector(".btn-guardar");
+        if (btnGuardar) btnGuardar.style.display = "none";
+    }
 
     function actualizar(id) {
         let fila = document.querySelector(`#menu-${id}`).closest("tr");
@@ -139,12 +153,13 @@
         &email=${fila.children[3].children[0].value}
         &telefono=${fila.children[4].children[0].value}
         &rol=${fila.children[6].children[0].value}`
-        });
-
-        bloquearFila(fila);
-        filaEditando = null;
+        })
+            .then(() => {
+                bloquearFila(fila);
+                filaEditando = null;
+                cargarUsuarios();
+            });
     }
-
 
     function eliminar(id) {
         if (!confirm("¿Eliminar usuario?")) return;
@@ -156,7 +171,6 @@
         }).then(() => cargarUsuarios());
     }
 
-
     function toggleMenu(id) {
         document.querySelectorAll(".dropdown").forEach(d => d.style.display = "none");
 
@@ -167,7 +181,6 @@
     document.addEventListener("click", () => {
         document.querySelectorAll(".dropdown").forEach(d => d.style.display = "none");
     });
-
 
     function verHistorial(id) {
         fetch("index.php", {
@@ -225,11 +238,9 @@
         document.querySelector(".modal-overlay")?.remove();
     }
 
-
     document.getElementById("buscador").addEventListener("input", e => {
         cargarUsuarios(e.target.value);
     });
-
 
     cargarUsuarios();
 

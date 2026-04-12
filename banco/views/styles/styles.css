@@ -551,3 +551,32 @@ tr.editando {
 .menu-acciones .dropdown {
     z-index: 9999;
 }
+
+.acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-guardar {
+    background: transparent !important;
+    border: none !important;
+    font-size: 18px;
+    cursor: pointer;
+    color: #28a745 !important;
+    display: none;
+    padding: 0;
+}
+
+.btn-guardar:hover,
+.btn-guardar:focus,
+.btn-guardar:active {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #218838 !important;
+}
+
+.btn-guardar:hover {
+    transform: scale(1.2);
+
+}

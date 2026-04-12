@@ -130,12 +130,14 @@ class UsuarioDDBB {
 
     public function getUsuarios($busqueda = "") {
         if ($busqueda != "") {
-            $sql = "SELECT * FROM usuarios WHERE nombre LIKE ? OR email LIKE ?";
+            $sql = "SELECT * FROM usuarios 
+                WHERE activo = 1 
+                AND (nombre LIKE ? OR email LIKE ?)";
             $stmt = $this->conexion->prepare($sql);
             $like = "%$busqueda%";
             $stmt->execute([$like, $like]);
         } else {
-            $sql = "SELECT * FROM usuarios";
+            $sql = "SELECT * FROM usuarios WHERE activo = 1";
             $stmt = $this->conexion->prepare($sql);
             $stmt->execute();
         }
@@ -151,7 +153,7 @@ class UsuarioDDBB {
     }
 
     public function eliminarUsuario($id) {
-        $sql = "DELETE FROM usuarios WHERE id=?";
+        $sql = "UPDATE usuarios SET activo = 0 WHERE id = ?";
         $stmt = $this->conexion->prepare($sql);
         return $stmt->execute([$id]);
     }
