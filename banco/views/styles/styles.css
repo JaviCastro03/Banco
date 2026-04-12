@@ -578,6 +578,7 @@ tr.editando {
 
 .btn-guardar:hover {
     transform: scale(1.2);
+}
 
 .cabecera {
     width: calc(100% + 80px);
@@ -655,5 +656,4 @@ tr.editando {
         width: 32px;
         height: 32px;
     }
-}
 }
