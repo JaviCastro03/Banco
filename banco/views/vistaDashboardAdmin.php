@@ -1,3 +1,8 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <!doctype html>
 <html lang="es">
 <head>
@@ -8,14 +13,13 @@
 </head>
 <body>
 
+<!-- CABECERA -->
+<?php require_once "./views/cabecera.php"; ?>
+
 <div class="admin-container">
 
     <div class="admin-header">
         <h1>Panel Admin - <?php echo $_SESSION["nombre"]; ?></h1>
-
-        <form action="logout.php" method="post">
-            <button class="logout-btn">Cerrar sesión</button>
-        </form>
     </div>
 
     <input type="text" id="buscador" placeholder="Buscar usuario...">
@@ -87,6 +91,9 @@
                                 <div onclick="editar(${u.id})">Editar</div>
                                 <div onclick="eliminar(${u.id})">Eliminar</div>
                             </div>
+                        <div class="dropdown" id="menu-${u.id}">
+                            <div onclick="editar(${u.id})">Editar</div>
+                            <div onclick="eliminar(${u.id})">Eliminar</div>
                         </div>
 
                         <button class="btn-guardar"  onclick="actualizar(${u.id})" title="Guardar">
@@ -173,7 +180,6 @@
 
     function toggleMenu(id) {
         document.querySelectorAll(".dropdown").forEach(d => d.style.display = "none");
-
         let menu = document.getElementById(`menu-${id}`);
         menu.style.display = (menu.style.display === "block") ? "none" : "block";
     }
@@ -190,7 +196,6 @@
         })
             .then(res => res.json())
             .then(data => {
-
                 let html = `
         <div class="modal">
             <h2>Historial del usuario</h2>
@@ -222,12 +227,11 @@
                 html += `
             </table>
             <button onclick="cerrarModal()">Cerrar</button>
-        </div>
-        `;
+        </div>`;
 
-                document.body.insertAdjacentHTML("beforeend", `
-            <div class="modal-overlay" onclick="cerrarModal()"></div>
-        `);
+                document.body.insertAdjacentHTML("beforeend",
+                    `<div class="modal-overlay" onclick="cerrarModal()"></div>`
+                );
 
                 document.body.insertAdjacentHTML("beforeend", html);
             });
@@ -243,7 +247,6 @@
     });
 
     cargarUsuarios();
-
 </script>
 
 </body>

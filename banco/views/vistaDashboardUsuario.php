@@ -2,22 +2,21 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <title>Dashboard - EcoBank</title>
+    <link rel="stylesheet" href="views/styles/styles.css">
 </head>
 <body>
 
-<h1>Bienvenido usuario <?php echo $_SESSION["nombre"] ?? "usuario"; ?></h1>
+<?php require_once "views/cabecera.php"; ?>
 
-<form action="index.php" method="post">
-    <button type="submit" name="bizum">Enviar Bizum</button>
-</form>
+<div class="container">
+    <h1>Panel de Usuario</h1>
+    <p>Gestiona tus operaciones bancarias de forma rápida y segura.</p>
 
-<br>
-
-<form action="logout.php" method="post">
-    <button type="submit">Cerrar sesión</button>
-</form>
+    <form action="index.php" method="post">
+        <button type="submit" name="bizum" class="btn">Enviar Bizum</button>
+    </form>
+</div>
 
 </body>
-</html>
 </html>
