@@ -111,7 +111,6 @@ if (session_status() === PHP_SESSION_NONE) {
 
     function editar(id) {
 
-
         document.querySelectorAll(".dropdown").forEach(d => d.style.display = "none");
 
         let fila = document.querySelector(`#menu-${id}`).closest("tr");
@@ -129,12 +128,15 @@ if (session_status() === PHP_SESSION_NONE) {
         fila.classList.add("editando");
         filaEditando = fila;
 
-        // MOSTRAR BOTÓN GUARDAR
         let btnGuardar = fila.querySelector(".btn-guardar");
-        btnGuardar.style.display = "inline-block";
+        if (btnGuardar) btnGuardar.style.display = "inline-block";
+
+        let btnMenu = fila.querySelector(".btn-menu");
+        if (btnMenu) btnMenu.style.visibility = "hidden";
     }
 
     function bloquearFila(fila) {
+
         let inputs = fila.querySelectorAll("input");
         let select = fila.querySelector("select");
 
@@ -143,9 +145,11 @@ if (session_status() === PHP_SESSION_NONE) {
 
         fila.classList.remove("editando");
 
-        // OCULTAR BOTÓN GUARDAR
         let btnGuardar = fila.querySelector(".btn-guardar");
         if (btnGuardar) btnGuardar.style.display = "none";
+
+        let btnMenu = fila.querySelector(".btn-menu");
+        if (btnMenu) btnMenu.style.visibility = "visible";
     }
 
     function actualizar(id) {
