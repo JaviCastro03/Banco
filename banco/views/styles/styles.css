@@ -1,8 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap');
 
-/* =========================
-   RESET
-========================= */
 * {
     margin: 0;
     padding: 0;
@@ -10,18 +7,12 @@
     font-family: "DM Sans", sans-serif;
 }
 
-/* =========================
-   BODY (SIN SCROLL)
-========================= */
 body {
-    min-height: 100vh; /* 👈 NO height */
+    min-height: 100vh;
     background: linear-gradient(135deg, #f5f0e8, #efe9df);
     padding: 40px 20px;
 }
 
-/* =========================
-   CONTENEDOR
-========================= */
 .container {
     width: 100%;
     max-width: 750px;
@@ -32,10 +23,9 @@ body {
     border: 1px solid rgba(224, 217, 206, 0.6);
     color: #2c2a26;
     text-align: center;
-    margin: 0 auto; /* 👈 centra sin flex */
-
-
+    margin: 0 auto;
 }
+
 td select {
     width: 100%;
     padding: 6px;
@@ -50,14 +40,13 @@ td select:focus {
     background: #fff;
     box-shadow: 0 0 0 1px #3a6b4a;
 }
+
 .direccion {
     font-size: 13px;
     line-height: 1.4;
     color: #555;
 }
-/* =========================
-   LOGIN CENTRADO
-========================= */
+
 .login-body {
     min-height: 100vh;
     display: flex;
@@ -68,14 +57,13 @@ td select:focus {
 .input-group {
     margin-bottom: 15px;
 }
+
 .login-form {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
-/* =========================
-   LOGO
-========================= */
+
 .logo-wrapper {
     display: flex;
     flex-direction: column;
@@ -96,27 +84,18 @@ td select:focus {
     color: #3a6b4a;
 }
 
-/* =========================
-   TITULO
-========================= */
 .container h1 {
     font-family: "Cormorant Garamond", serif;
     font-size: 22px;
     margin-bottom: 20px;
 }
 
-/* =========================
-   GRID
-========================= */
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
-/* =========================
-   INPUTS
-========================= */
 .input-group {
     position: relative;
 }
@@ -139,7 +118,6 @@ td select:focus {
             0 0 0 1px #3a6b4a;
 }
 
-/* línea animada */
 .input-group::after {
     content: "";
     position: absolute;
@@ -160,16 +138,10 @@ td select:focus {
     color: #a89f93;
 }
 
-/* =========================
-   FULL WIDTH
-========================= */
 .full-width {
     grid-column: span 2;
 }
 
-/* =========================
-   BOTÓN
-========================= */
 .btn {
     width: 100%;
     padding: 14px;
@@ -190,9 +162,6 @@ td select:focus {
     box-shadow: 0 12px 20px rgba(58,107,74,0.25);
 }
 
-/* =========================
-   MENSAJES
-========================= */
 .mensaje {
     margin-bottom: 15px;
     padding: 10px;
@@ -213,9 +182,6 @@ td select:focus {
     border-color: #c0392b;
 }
 
-/* =========================
-   LINK
-========================= */
 .link {
     margin-top: 15px;
 }
@@ -229,18 +195,12 @@ td select:focus {
     text-decoration: underline;
 }
 
-/* =========================
-   DIVIDER
-========================= */
 .divider {
     height: 1px;
     background: #e0d9ce;
     margin: 15px 0;
 }
 
-/* =========================
-   ANIMACIONES
-========================= */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -252,25 +212,18 @@ td select:focus {
     }
 }
 
-
-/* =========================
-   ADMIN PANEL
-========================= */
-
 .admin-container {
     width: 100%;
     height: 100%;
-    padding: 40px 60px; /* espacio lateral elegante */
+    padding: 40px 60px;
 }
 
-/* título */
 .admin-container h1 {
     color: #3a6b4a;
     margin-bottom: 20px;
     font-family: "Cormorant Garamond", serif;
 }
 
-/* buscador */
 #buscador {
     width: 100%;
     padding: 14px;
@@ -287,10 +240,6 @@ td select:focus {
     box-shadow: 0 0 0 2px rgba(58,107,74,0.15);
 }
 
-/* =========================
-   TABLA
-========================= */
-
 .tabla-container {
     max-height: 420px;
     overflow-y: auto;
@@ -299,7 +248,6 @@ td select:focus {
     background: #faf7f2;
 }
 
-/* scroll bonito */
 .tabla-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -314,7 +262,6 @@ table {
     border-collapse: collapse;
 }
 
-/* cabecera */
 th {
     background: #3a6b4a;
     color: white;
@@ -324,21 +271,15 @@ th {
     font-size: 13px;
 }
 
-/* celdas */
 td, th {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #eae4da;
 }
 
-/* filas hover */
 tr:hover {
     background: #f3eee6;
 }
-
-/* =========================
-   INPUTS EN TABLA
-========================= */
 
 td input {
     width: 100%;
@@ -350,16 +291,11 @@ td input {
     outline: none;
 }
 
-/* efecto edición */
 td input:focus {
     background: #fff;
     border-radius: 4px;
     box-shadow: 0 0 0 1px #3a6b4a;
 }
-
-/* =========================
-   BOTÓN ELIMINAR
-========================= */
 
 td button {
     background: #c0392b;
@@ -376,10 +312,6 @@ td button:hover {
     transform: scale(1.05);
 }
 
-/* =========================
-   BOTÓN LOGOUT
-========================= */
-
 .admin-container form button {
     margin-top: 20px;
     padding: 10px 16px;
@@ -394,9 +326,6 @@ td button:hover {
 .admin-container form button:hover {
     background: #2e5439;
 }
-/* =========================
-   HEADER ADMIN
-========================= */
 
 .admin-header {
     display: flex;
@@ -405,14 +334,11 @@ td button:hover {
     margin-bottom: 25px;
 }
 
-/* título */
 .admin-header h1 {
     color: #3a6b4a;
     font-family: "Cormorant Garamond", serif;
 }
 
-
-/* botón logout */
 .logout-btn {
     background: #3a6b4a;
     color: white;
@@ -428,10 +354,6 @@ td button:hover {
     transform: translateY(-1px);
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-
 @media (max-width: 768px) {
     .admin-container {
         padding: 15px;
@@ -443,10 +365,6 @@ td button:hover {
     }
 }
 
-
-/* =========================
-   SELECTS BONITOS
-========================= */
 .input-group select {
     width: 100%;
     padding: 16px;
@@ -461,7 +379,6 @@ td button:hover {
     transition: all 0.3s ease;
 }
 
-/* flechita moderna */
 .input-group select {
     background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='20' height='20' fill='%233a6b4a' viewBox='0 0 20 20'%3E%3Cpath d='M5 7l5 5 5-5H5z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -469,10 +386,168 @@ td button:hover {
     background-size: 14px;
 }
 
-/* focus */
 .input-group select:focus {
     background-color: #ffffff;
     box-shadow:
             0 8px 20px rgba(58,107,74,0.12),
             0 0 0 1px #3a6b4a;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(3px);
+    z-index: 998;
+}
+
+.modal {
+    position: fixed;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    max-width: 900px;
+    background: rgba(250, 247, 242, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid rgba(224, 217, 206, 0.6);
+    padding: 25px;
+    z-index: 999;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal h2 {
+    margin-bottom: 15px;
+    color: #3a6b4a;
+    font-family: "Cormorant Garamond", serif;
+}
+
+.modal table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.modal th {
+    background: #3a6b4a;
+    color: white;
+    font-size: 13px;
+}
+
+.modal td {
+    font-size: 13px;
+    color: #2c2a26;
+}
+
+.modal tr:hover {
+    background: #f3eee6;
+}
+
+.modal button {
+    margin-top: 15px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #3a6b4a;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.modal button:hover {
+    background: #2e5439;
+}
+
+.rojo {
+    color: #c0392b;
+    font-weight: 500;
+}
+
+.verde {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.menu-acciones .btn-menu {
+    background: none !important;
+    border: none !important;
+    color: #3a6b4a;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.menu-acciones .btn-menu:hover {
+    color: #2e5439;
+    transform: scale(1.1);
+}
+
+.menu-acciones .dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 25px;
+    background: #fff;
+    border-radius: 8px;
+    min-width: 140px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.menu-acciones .dropdown div {
+    padding: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.menu-acciones .dropdown div:hover {
+    background: #f3eee6;
+}
+
+.menu-acciones .dropdown div:last-child {
+    color: #c0392b;
+}
+
+.menu-acciones .dropdown div:last-child:hover {
+    background: #fdf1f1;
+}
+
+td input:disabled {
+    color: #666;
+    cursor: default;
+}
+
+tr.editando {
+    background: #fffdf8;
+}
+
+.menu-acciones {
+    position: relative;
+}
+
+.menu-acciones .dropdown {
+    position: absolute;
+    top: 30px;
+    right: 0;
+}
+
+.tabla-container {
+    overflow: visible !important;
+}
+
+.tabla-container {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.menu-acciones .dropdown {
+    z-index: 9999;
 }
