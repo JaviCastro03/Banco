@@ -1,4 +1,3 @@
-
 <?php
 require_once "./models/ConexionDB.php";
 require_once "./models/UsuarioDDBB.php";
@@ -9,38 +8,137 @@ use PHPMailer\PHPMailer\Exception;
 session_start();
 
 $conexion = new UsuarioDDBB();
+
+/* ======================================================
+            SOLICITAR CÓDIGO DE VERIFICACIÓN
+====================================================== */
+if (isset($_POST["accion"]) && $_POST["accion"] === "solicitarCodigoBizum") {
+
+    if (!isset($_SESSION["idU"])) {
+        $_SESSION["mensaje"] = "Sesión no válida.";
+        $_SESSION["tipo_mensaje"] = "error";
+        $_SESSION["ruta"] = "login";
+        header("Location: index.php");
+        exit;
+    }
+
+    $telefono = trim($_POST["telefono"] ?? "");
+    $importe = floatval($_POST["importe"] ?? 0);
+    $concepto = trim($_POST["concepto"] ?? "Bizum");
+
+    if ($telefono === "" || $importe <= 0) {
+        $_SESSION["mensaje"] = "Datos inválidos.";
+        $_SESSION["tipo_mensaje"] = "error";
+        $_SESSION["ruta"] = "bizumUsuario";
+        header("Location: index.php");
+        exit;
+    }
+
+    $codigo = $conexion->generarCodigoVerificacion($_SESSION["idU"]);
+    $email = $_SESSION["email"];
+
+    $mensaje = "Tu código de verificación para enviar el Bizum es: <b>$codigo</b>";
+    enviarCorreoGmail($email, "Código de verificación Bizum", $mensaje);
+
+    $_SESSION["telefono_bizum"] = $telefono;
+    $_SESSION["importe_bizum"] = $importe;
+    $_SESSION["concepto_bizum"] = $concepto;
+    $_SESSION["mostrar_codigo"] = true;
+
+    $_SESSION["mensaje"] = "Se ha enviado un código de verificación a tu correo.";
+    $_SESSION["tipo_mensaje"] = "success";
+    $_SESSION["ruta"] = "bizumUsuario";
+
+    header("Location: index.php");
+    exit;
+}
+
+/* ======================================================
+            CONFIRMAR Y ENVIAR BIZUM
+====================================================== */
+if (isset($_POST["accion"]) && $_POST["accion"] === "confirmarBizum") {
+
+    if (!isset($_SESSION["idU"])) {
+        $_SESSION["mensaje"] = "Sesión no válida.";
+        $_SESSION["tipo_mensaje"] = "error";
+        $_SESSION["ruta"] = "login";
+        header("Location: index.php");
+        exit;
+    }
+
+    $codigo = trim($_POST["codigo"] ?? "");
+
+    if (!$conexion->verificarCodigo($_SESSION["idU"], $codigo)) {
+        $_SESSION["mensaje"] = "El código es incorrecto o ha caducado.";
+        $_SESSION["tipo_mensaje"] = "error";
+        $_SESSION["mostrar_codigo"] = true;
+        $_SESSION["ruta"] = "bizumUsuario";
+        header("Location: index.php");
+        exit;
+    }
+
+    $resultado = $conexion->enviarBizum(
+        $_SESSION["idU"],
+        $_SESSION["telefono_bizum"],
+        $_SESSION["importe_bizum"],
+        $_SESSION["concepto_bizum"]
+    );
+
+    unset(
+        $_SESSION["telefono_bizum"],
+        $_SESSION["importe_bizum"],
+        $_SESSION["concepto_bizum"],
+        $_SESSION["mostrar_codigo"]
+    );
+
+    $_SESSION["mensaje"] = $resultado["mensaje"];
+    $_SESSION["tipo_mensaje"] = $resultado["ok"] ? "success" : "error";
+    $_SESSION["ruta"] = "bizumUsuario";
+
+    header("Location: index.php");
+    exit;
+}
+
+/* ======================================================
+                        PETICIONES AJAX
+====================================================== */
 if (isset($_POST["ajax"])) {
 
-    if ($_POST["accion"] == "buscar") {
-        $usuarios = $conexion->getUsuarios($_POST["busqueda"]);
-        echo json_encode($usuarios);
+    $accion = $_POST["accion"] ?? "";
+
+    if ($accion === "buscar") {
+        echo json_encode($conexion->getUsuarios($_POST["busqueda"] ?? ""));
         exit;
     }
 
-    if ($_POST["accion"] == "actualizar") {
-        $ok = $conexion->actualizarUsuario(
-            $_POST["id"],
-            $_POST["nombre"],
-            $_POST["apellidos"],
-            $_POST["email"],
-            $_POST["telefono"],
-            $_POST["rol"]
-        );
-        echo json_encode(["ok" => $ok]);
+    if ($accion === "actualizar") {
+        echo json_encode([
+            "ok" => $conexion->actualizarUsuario(
+                $_POST["id"],
+                $_POST["nombre"],
+                $_POST["apellidos"],
+                $_POST["email"],
+                $_POST["telefono"],
+                $_POST["rol"]
+            )
+        ]);
         exit;
     }
 
-    if ($_POST["accion"] == "eliminar") {
-        $ok = $conexion->eliminarUsuario($_POST["id"]);
-        echo json_encode(["ok" => $ok]);
+    if ($accion === "eliminar") {
+        echo json_encode(["ok" => $conexion->eliminarUsuario($_POST["id"])]);
         exit;
     }
-    if ($_POST["accion"] == "historial") {
-        $historial = $conexion->getHistorialUsuario($_POST["id"]);
-        echo json_encode($historial);
+
+    if ($accion === "historial") {
+        echo json_encode($conexion->getHistorialUsuario($_POST["id"]));
         exit;
     }
 }
+
+/* ======================================================
+                        RUTAS
+====================================================== */
 if (!isset($_SESSION["ruta"])) {
     $_SESSION["ruta"] = "login";
 }
@@ -48,9 +146,12 @@ if (!isset($_SESSION["ruta"])) {
 if (isset($_POST["dashboard"])) $_SESSION["ruta"] = "dashboard";
 if (isset($_POST["login"])) $_SESSION["ruta"] = "login";
 if (isset($_POST["registro"])) $_SESSION["ruta"] = "registro";
+if (isset($_POST["bizum"])) $_SESSION["ruta"] = "bizumUsuario";
 
-
-if ($_SESSION["ruta"] == "login") {
+/* ======================================================
+                        LOGIN
+====================================================== */
+if ($_SESSION["ruta"] === "login") {
 
     if (isset($_POST["iniciarSesion"])) {
 
@@ -81,11 +182,7 @@ if ($_SESSION["ruta"] == "login") {
         $_SESSION["email"] = $_POST["email"];
         $_SESSION["rol"] = $rol;
 
-        if ($rol == 2) {
-            $_SESSION["ruta"] = "admin";
-        } else {
-            $_SESSION["ruta"] = "dashboard";
-        }
+        $_SESSION["ruta"] = ($rol == 2) ? "admin" : "dashboard";
 
         header("Location: index.php");
         exit;
@@ -94,12 +191,10 @@ if ($_SESSION["ruta"] == "login") {
     require_once "./views/vistaLogin.php";
 }
 
-
-
 /* ======================================================
-                        DASHBOARD
+                    DASHBOARD USUARIO
 ====================================================== */
-if ($_SESSION["ruta"] == "dashboard") {
+if ($_SESSION["ruta"] === "dashboard") {
 
     if (!isset($_SESSION["idU"])) {
         $_SESSION["ruta"] = "login";
@@ -110,11 +205,24 @@ if ($_SESSION["ruta"] == "dashboard") {
     require_once "./views/vistaDashboardUsuario.php";
 }
 
+/* ======================================================
+                        VISTA BIZUM
+====================================================== */
+if ($_SESSION["ruta"] === "bizumUsuario") {
+
+    if (!isset($_SESSION["idU"])) {
+        $_SESSION["ruta"] = "login";
+        header("Location: index.php");
+        exit;
+    }
+
+    require_once "./views/vistaBizumUsuario.php";
+}
 
 /* ======================================================
-                        ADMIN
+                            ADMIN
 ====================================================== */
-if ($_SESSION["ruta"] == "admin") {
+if ($_SESSION["ruta"] === "admin") {
 
     if (!isset($_SESSION["idU"]) || ($_SESSION["rol"] ?? 0) != 2) {
         $_SESSION["ruta"] = "login";
@@ -125,11 +233,10 @@ if ($_SESSION["ruta"] == "admin") {
     require_once "./views/vistaDashboardAdmin.php";
 }
 
-
 /* ======================================================
                         REGISTRO
 ====================================================== */
-if ($_SESSION["ruta"] == "registro") {
+if ($_SESSION["ruta"] === "registro") {
 
     if (isset($_POST["registrar"])) {
 
@@ -144,6 +251,7 @@ if ($_SESSION["ruta"] == "registro") {
             header("Location: index.php");
             exit;
         }
+
         if ($conexion->dniExiste($_POST["dni"])) {
             $_SESSION["mensaje"] = "El DNI ya está registrado";
             header("Location: index.php");
@@ -185,8 +293,6 @@ if ($_SESSION["ruta"] == "registro") {
     require_once "./views/vistaRegistro.php";
 }
 
-
-
 /* ======================================================
                     ENVIAR CORREO
 ====================================================== */
@@ -205,7 +311,7 @@ function enviarCorreoGmail($email, $asunto, $mensaje)
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
-        $mail->setFrom('jcastro2gs@gmail.com', 'Aplicación');
+        $mail->setFrom('jcastro2gs@gmail.com', 'EcoBank');
         $mail->addAddress($email);
 
         $mail->isHTML(true);
@@ -220,3 +326,4 @@ function enviarCorreoGmail($email, $asunto, $mensaje)
         return false;
     }
 }
+?>
