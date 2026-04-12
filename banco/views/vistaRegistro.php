@@ -71,12 +71,16 @@
 
         <div class="input-group full-width">
             <select id="via" name="via" required>
-                <option value="">Vía</option>
+                <option value="">Selecciona una vía</option>
             </select>
         </div>
 
-        <div class="input-group full-width">
+        <div class="input-group">
             <input type="text" name="numero_piso" placeholder="Número / Piso" required>
+        </div>
+
+        <div class="input-group">
+            <input type="date" name="fecha_nacimiento" required>
         </div>
 
 
@@ -106,6 +110,48 @@
     </form>
 
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const inputFecha = document.querySelector("input[name='fecha_nacimiento']");
+        const form = document.querySelector(".form-grid");
+
+        // Limitar calendario (+18)
+        if (inputFecha) {
+            const hoy = new Date();
+            const año = hoy.getFullYear() - 18;
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoy.getDate()).padStart(2, '0');
+
+            inputFecha.max = `${año}-${mes}-${dia}`;
+        }
+
+        // Validar al enviar
+        if (form) {
+            form.addEventListener("submit", function(e) {
+                const fecha = inputFecha.value;
+
+                if (!fecha) return;
+
+                const hoy = new Date();
+                const nacimiento = new Date(fecha);
+
+                let edad = hoy.getFullYear() - nacimiento.getFullYear();
+                const mes = hoy.getMonth() - nacimiento.getMonth();
+
+                if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+                    edad--;
+                }
+
+                if (edad < 18) {
+                    e.preventDefault();
+                    alert("Debes tener al menos 18 años para registrarte.");
+                }
+            });
+        }
+
+    });
+</script>
 <script src="./views/js/catastro.js"></script>
 
 </body>

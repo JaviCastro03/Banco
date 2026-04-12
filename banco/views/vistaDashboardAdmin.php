@@ -9,6 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <meta charset="UTF-8">
     <title>Admin - EcoBank</title>
     <link rel="stylesheet" href="./views/styles/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
 <body>
 
@@ -44,6 +45,7 @@ if (session_status() === PHP_SESSION_NONE) {
 </div>
 
 <script>
+
     let filaEditando = null;
 
     function cargarUsuarios(busqueda = "") {
@@ -80,13 +82,24 @@ if (session_status() === PHP_SESSION_NONE) {
                 </td>
 
                 <td>
-                    <div class="menu-acciones" onclick="event.stopPropagation()">
-                        <button class="btn-menu" onclick="toggleMenu(${u.id})">⋮</button>
+                    <div class="acciones" onclick="event.stopPropagation()">
 
+                        <div class="menu-acciones">
+                            <button class="btn-menu" onclick="toggleMenu(${u.id})">⋮</button>
+
+                            <div class="dropdown" id="menu-${u.id}">
+                                <div onclick="editar(${u.id})">Editar</div>
+                                <div onclick="eliminar(${u.id})">Eliminar</div>
+                            </div>
                         <div class="dropdown" id="menu-${u.id}">
                             <div onclick="editar(${u.id})">Editar</div>
                             <div onclick="eliminar(${u.id})">Eliminar</div>
                         </div>
+
+                        <button class="btn-guardar"  onclick="actualizar(${u.id})" title="Guardar">
+                            <i class="bi bi-floppy-fill"></i>
+                        </button>
+
                     </div>
                 </td>
             </tr>`;
@@ -97,6 +110,10 @@ if (session_status() === PHP_SESSION_NONE) {
     }
 
     function editar(id) {
+
+
+        document.querySelectorAll(".dropdown").forEach(d => d.style.display = "none");
+
         let fila = document.querySelector(`#menu-${id}`).closest("tr");
 
         if (filaEditando && filaEditando !== fila) {
@@ -111,6 +128,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
         fila.classList.add("editando");
         filaEditando = fila;
+
+        // MOSTRAR BOTÓN GUARDAR
+        let btnGuardar = fila.querySelector(".btn-guardar");
+        btnGuardar.style.display = "inline-block";
     }
 
     function bloquearFila(fila) {
@@ -121,6 +142,10 @@ if (session_status() === PHP_SESSION_NONE) {
         select.disabled = true;
 
         fila.classList.remove("editando");
+
+        // OCULTAR BOTÓN GUARDAR
+        let btnGuardar = fila.querySelector(".btn-guardar");
+        if (btnGuardar) btnGuardar.style.display = "none";
     }
 
     function actualizar(id) {
@@ -135,10 +160,12 @@ if (session_status() === PHP_SESSION_NONE) {
         &email=${fila.children[3].children[0].value}
         &telefono=${fila.children[4].children[0].value}
         &rol=${fila.children[6].children[0].value}`
-        });
-
-        bloquearFila(fila);
-        filaEditando = null;
+        })
+            .then(() => {
+                bloquearFila(fila);
+                filaEditando = null;
+                cargarUsuarios();
+            });
     }
 
     function eliminar(id) {
