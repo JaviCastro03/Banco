@@ -1,6 +1,5 @@
 <?php
-require_once "ConexionDB.php";
-
+require_once __DIR__ . "/ConexionDB.php";
 class UsuarioDDBB {
 
     private $conexion;

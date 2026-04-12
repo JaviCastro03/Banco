@@ -1,7 +1,7 @@
 <?php
 
 require_once "../../models/UsuarioDDBB.php";
-require "../../models/ConexionDB.php";
+require_once "../../models/ConexionDB.php";
 
 session_start();
 $conexion = new UsuarioDDBB();

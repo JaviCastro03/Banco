@@ -1,3 +1,8 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <!doctype html>
 <html lang="es">
 <head>
@@ -6,7 +11,10 @@
     <title>Enviar Bizum - EcoBank</title>
     <link rel="stylesheet" href="./views/styles/styles.css">
 </head>
-<body class="login-body">
+<body>
+
+<!-- CABECERA -->
+<?php require_once "./views/cabecera.php"; ?>
 
 <div class="container">
 
@@ -79,11 +87,10 @@
     <div class="divider"></div>
 
     <form action="index.php" method="post" class="link">
-        <input type="submit" name="dashboard" value="Volver al Dashboard">
+        <input type="submit" name="dashboard" value="Volver al Inicio">
     </form>
 
 </div>
 
 </body>
-</html>
 </html>
