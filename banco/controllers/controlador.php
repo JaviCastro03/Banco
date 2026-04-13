@@ -268,7 +268,7 @@ if ($_SESSION["ruta"] === "registro") {
             $_POST["fecha_nacimiento"] ?? null,
             $_POST["provincia"],
             $_POST["municipio"],
-            $_POST["calle"],
+            $_POST["via"],
             $_POST["numero_piso"]
         )) {
 
