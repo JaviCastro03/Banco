@@ -1,0 +1,436 @@
+<?php
+require_once __DIR__ . "/ConexionDB.php";
+
+class UsuarioDDBB {
+
+    private $conexion;
+
+    public function __construct(){
+        $this->conexion = ConexionDB::getConexion('banca_online');
+    }
+
+    /* ======================================================
+                        USUARIOS
+    ====================================================== */
+
+    public function emailExiste($email){
+        $sql = "SELECT id FROM usuarios WHERE email = :email";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->bindParam(':email', $email);
+        $consulta->execute();
+        return $consulta->rowCount() > 0;
+    }
+
+    public static function comprobarPassword($password, $cpassword){
+        return $password === $cpassword;
+    }
+
+    public function insertarUsuario($dni, $nombre, $apellidos, $email, $telefono, $password,
+        $fecha_nacimiento, $provincia, $municipio, $via, $numero_piso) {
+        try {
+            $this->conexion->beginTransaction();
+            $password_hash = password_hash($password, PASSWORD_DEFAULT);
+            $sql = "INSERT INTO usuarios (dni, nombre, apellidos, email, telefono, password_hash,
+                     fecha_nacimiento, provincia, municipio, via, numero_piso, rol)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute([$dni, $nombre, $apellidos, $email, $telefono, $password_hash,
+                $fecha_nacimiento, $provincia, $municipio, $via, $numero_piso]);
+            $usuario_id = $this->conexion->lastInsertId();
+            $iban = $this->generarIBAN();
+            $sqlCuenta = "INSERT INTO cuentas (usuario_id, iban, saldo, tipo, moneda, activa)
+                          VALUES (?, ?, 0.00, 'corriente', 'EUR', 1)";
+            $stmtCuenta = $this->conexion->prepare($sqlCuenta);
+            $stmtCuenta->execute([$usuario_id, $iban]);
+            $this->conexion->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conexion->rollBack();
+            return false;
+        }
+    }
+
+    public function dniExiste($dni){
+        $sql = "SELECT id FROM usuarios WHERE dni = :dni";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->bindParam(':dni', $dni);
+        $consulta->execute();
+        return $consulta->rowCount() > 0;
+    }
+
+    public function getPasswordHash($email){
+        $sql = "SELECT password_hash FROM usuarios WHERE email = :email";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->bindParam(':email', $email);
+        $consulta->execute();
+        $fila = $consulta->fetch(PDO::FETCH_ASSOC);
+        return $fila['password_hash'] ?? null;
+    }
+
+    public function getIdUsuario($email){
+        $sql = "SELECT id FROM usuarios WHERE email = :email";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->bindParam(':email', $email);
+        $consulta->execute();
+        $fila = $consulta->fetch(PDO::FETCH_ASSOC);
+        return $fila['id'] ?? null;
+    }
+
+    public function getNombreUsuario($email){
+        $sql = "SELECT nombre FROM usuarios WHERE email = ?";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$email]);
+        return $stmt->fetchColumn();
+    }
+
+    public function getRol($email){
+        $sql = "SELECT rol FROM usuarios WHERE email = ?";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$email]);
+        return $stmt->fetchColumn();
+    }
+
+    public function setRol($email, $rol){
+        $sql = "UPDATE usuarios SET rol = ? WHERE email = ?";
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([$rol, $email]);
+    }
+
+    public function getDatosUsuario($usuario_id) {
+        $sql = "SELECT u.*, c.iban, c.saldo, c.tipo as tipo_cuenta, c.moneda, c.id as cuenta_id
+                FROM usuarios u
+                LEFT JOIN cuentas c ON c.usuario_id = u.id AND c.activa = 1
+                WHERE u.id = ?";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function actualizarPerfil($usuario_id, $nombre, $apellidos, $email, $telefono,
+        $provincia, $municipio, $via, $numero_piso) {
+        $sql = "UPDATE usuarios SET nombre=?, apellidos=?, email=?, telefono=?,
+                provincia=?, municipio=?, via=?, numero_piso=?, updated_at=NOW() WHERE id=?";
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([$nombre, $apellidos, $email, $telefono,
+            $provincia, $municipio, $via, $numero_piso, $usuario_id]);
+    }
+
+    public function cambiarPassword($usuario_id, $password_actual, $nueva_password) {
+        $sql = "SELECT password_hash FROM usuarios WHERE id = ?";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        $hash = $stmt->fetchColumn();
+        if (!password_verify($password_actual, $hash)) {
+            return ['ok' => false, 'mensaje' => 'La contraseña actual es incorrecta.'];
+        }
+        $nuevo_hash = password_hash($nueva_password, PASSWORD_DEFAULT);
+        $sql = "UPDATE usuarios SET password_hash = ? WHERE id = ?";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$nuevo_hash, $usuario_id]);
+        return ['ok' => true, 'mensaje' => 'Contraseña actualizada correctamente.'];
+    }
+
+    public function getUsuarios($busqueda = "") {
+        if ($busqueda != "") {
+            $sql = "SELECT * FROM usuarios WHERE activo = 1 AND (nombre LIKE ? OR email LIKE ?)";
+            $stmt = $this->conexion->prepare($sql);
+            $like = "%$busqueda%";
+            $stmt->execute([$like, $like]);
+        } else {
+            $sql = "SELECT * FROM usuarios WHERE activo = 1";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute();
+        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function actualizarUsuario($id, $nombre, $apellidos, $email, $telefono, $rol) {
+        $sql = "UPDATE usuarios SET nombre=?, apellidos=?, email=?, telefono=?, rol=? WHERE id=?";
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([$nombre, $apellidos, $email, $telefono, $rol, $id]);
+    }
+
+    public function eliminarUsuario($id) {
+        $sql = "UPDATE usuarios SET activo = 0 WHERE id = ?";
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([$id]);
+    }
+
+    /* ======================================================
+                        TARJETAS
+    ====================================================== */
+
+    public function getTarjetaUsuario($usuario_id) {
+        $sql = "SELECT t.* FROM tarjetas t
+                JOIN cuentas c ON t.cuenta_id = c.id
+                WHERE c.usuario_id = ? AND t.activa = 1
+                LIMIT 1";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function crearTarjeta($cuenta_id, $titular, $tipo = 'debito') {
+        $numero = $this->generarNumeroTarjeta();
+        $cvv = str_pad(random_int(0, 999), 3, '0', STR_PAD_LEFT);
+        $cvv_hash = password_hash($cvv, PASSWORD_DEFAULT);
+        $fecha_cad = date('Y-m-d', strtotime('+4 years'));
+
+        $sql = "INSERT INTO tarjetas (cuenta_id, numero_tarjeta, titular, fecha_caducidad, cvv_hash, tipo, activa)
+                VALUES (?, ?, ?, ?, ?, ?, 1)";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$cuenta_id, $numero, $titular, $fecha_cad, $cvv_hash, $tipo]);
+        return ['numero' => $numero, 'cvv' => $cvv, 'fecha_caducidad' => $fecha_cad];
+    }
+
+    private function generarNumeroTarjeta() {
+        do {
+            $numero = '4' . implode('', array_map(fn() => random_int(0, 9), range(1, 15)));
+            $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM tarjetas WHERE numero_tarjeta = ?");
+            $stmt->execute([$numero]);
+        } while ($stmt->fetchColumn() > 0);
+        return $numero;
+    }
+
+    /* ======================================================
+                TRANSACCIONES / HISTORIAL
+    ====================================================== */
+
+    public function getHistorialUsuario($usuario_id) {
+        $sql = "SELECT
+                    t.id, t.tipo, t.importe, t.estado, t.concepto, t.referencia, t.fecha,
+                    CASE WHEN t.cuenta_origen_id = c.id THEN 'salida' ELSE 'entrada' END as direccion,
+                    CASE
+                        WHEN t.tipo = 'bizum' THEN b.nombre_destino
+                        WHEN t.tipo = 'transferencia' THEN tf.titular_destino
+                        ELSE NULL
+                    END as destinatario,
+                    CASE
+                        WHEN t.tipo = 'bizum' THEN b.telefono_destino
+                        WHEN t.tipo = 'transferencia' THEN tf.iban_destino
+                        ELSE NULL
+                    END as destino_referencia
+                FROM transacciones t
+                JOIN cuentas c ON (t.cuenta_origen_id = c.id OR t.cuenta_destino_id = c.id)
+                LEFT JOIN bizum b ON b.transaccion_id = t.id
+                LEFT JOIN transferencias tf ON tf.transaccion_id = t.id
+                WHERE c.usuario_id = ?
+                GROUP BY t.id
+                ORDER BY t.fecha DESC";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getResumenMes($usuario_id) {
+        $sql = "SELECT
+                COALESCE(SUM(CASE WHEN t.cuenta_origen_id = c.id AND t.estado='completada' THEN t.importe ELSE 0 END), 0) as enviado,
+                COALESCE(SUM(CASE WHEN t.cuenta_destino_id = c.id AND t.estado='completada' THEN t.importe ELSE 0 END), 0) as recibido,
+                COUNT(CASE WHEN t.cuenta_origen_id = c.id THEN 1 END) as num_enviadas
+            FROM cuentas c
+            LEFT JOIN transacciones t ON (t.cuenta_origen_id = c.id OR t.cuenta_destino_id = c.id)
+                AND t.estado='completada'
+                AND MONTH(t.fecha) = MONTH(NOW())
+                AND YEAR(t.fecha) = YEAR(NOW())
+            WHERE c.usuario_id = ?";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $res ?: ['enviado' => 0, 'recibido' => 0, 'num_enviadas' => 0];
+    }
+
+    public function getDatosGrafica($usuario_id) {
+        $sql = "SELECT
+                    DATE_FORMAT(t.fecha, '%Y-%m') as mes,
+                    COALESCE(SUM(CASE WHEN t.cuenta_origen_id = c.id AND t.estado='completada' THEN t.importe ELSE 0 END), 0) as gastado,
+                    COALESCE(SUM(CASE WHEN t.cuenta_destino_id = c.id AND t.estado='completada' THEN t.importe ELSE 0 END), 0) as recibido
+                FROM transacciones t
+                JOIN cuentas c ON (t.cuenta_origen_id = c.id OR t.cuenta_destino_id = c.id)
+                WHERE c.usuario_id = ?
+                AND t.fecha >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+                GROUP BY DATE_FORMAT(t.fecha, '%Y-%m')
+                ORDER BY mes ASC";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getUltimosMovimientos($usuario_id, $limite = 5) {
+        $sql = "SELECT
+                    t.id, t.tipo, t.importe, t.concepto, t.fecha, t.estado,
+                    CASE WHEN t.cuenta_origen_id = c.id THEN 'salida' ELSE 'entrada' END as direccion,
+                    CASE
+                        WHEN t.tipo = 'bizum' THEN b.nombre_destino
+                        WHEN t.tipo = 'transferencia' THEN tf.titular_destino
+                        ELSE NULL
+                    END as destinatario
+                FROM transacciones t
+                JOIN cuentas c ON (t.cuenta_origen_id = c.id OR t.cuenta_destino_id = c.id)
+                LEFT JOIN bizum b ON b.transaccion_id = t.id
+                LEFT JOIN transferencias tf ON tf.transaccion_id = t.id
+                WHERE c.usuario_id = ?
+                GROUP BY t.id
+                ORDER BY t.fecha DESC
+                LIMIT ?";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindValue(1, $usuario_id, PDO::PARAM_INT);
+        $stmt->bindValue(2, $limite, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /* ======================================================
+                            BIZUM
+    ====================================================== */
+
+    public function enviarBizum($usuario_id, $telefono_destino, $importe, $concepto = "Bizum") {
+        try {
+            $this->conexion->beginTransaction();
+            if ($importe <= 0) throw new Exception("El importe debe ser mayor que cero.");
+
+            $stmt = $this->conexion->prepare("SELECT id, saldo FROM cuentas WHERE usuario_id = ?");
+            $stmt->execute([$usuario_id]);
+            $cuentaOrigen = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$cuentaOrigen) throw new Exception("El usuario no tiene cuenta bancaria.");
+            if ($cuentaOrigen['saldo'] < $importe) throw new Exception("Saldo insuficiente.");
+
+            $stmt = $this->conexion->prepare("SELECT id, nombre, apellidos FROM usuarios WHERE telefono = ?");
+            $stmt->execute([$telefono_destino]);
+            $destinatario = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$destinatario) throw new Exception("El teléfono no está registrado en EcoBank.");
+            if ($destinatario['id'] == $usuario_id) throw new Exception("No puedes enviarte un Bizum a ti mismo.");
+
+            $stmt = $this->conexion->prepare("SELECT id FROM cuentas WHERE usuario_id = ?");
+            $stmt->execute([$destinatario['id']]);
+            $cuentaDestino = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$cuentaDestino) throw new Exception("El destinatario no tiene cuenta bancaria.");
+
+            $this->conexion->prepare("UPDATE cuentas SET saldo = saldo - ? WHERE id = ?")->execute([$importe, $cuentaOrigen['id']]);
+            $this->conexion->prepare("UPDATE cuentas SET saldo = saldo + ? WHERE id = ?")->execute([$importe, $cuentaDestino['id']]);
+
+            $referencia = uniqid("BIZUM_");
+            $stmt = $this->conexion->prepare("INSERT INTO transacciones (cuenta_origen_id, cuenta_destino_id, importe, tipo, estado, concepto, referencia, ip_origen) VALUES (?, ?, ?, 'bizum', 'completada', ?, ?, ?)");
+            $stmt->execute([$cuentaOrigen['id'], $cuentaDestino['id'], $importe, $concepto, $referencia, $_SERVER['REMOTE_ADDR'] ?? null]);
+            $transaccion_id = $this->conexion->lastInsertId();
+
+            $nombreDestino = trim($destinatario['nombre']) . " " . trim($destinatario['apellidos']);
+            $stmt = $this->conexion->prepare("INSERT INTO bizum (transaccion_id, telefono_destino, nombre_destino, mensaje) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$transaccion_id, $telefono_destino, $nombreDestino, $concepto]);
+
+            $this->conexion->commit();
+            return ["ok" => true, "mensaje" => "Bizum enviado correctamente a $nombreDestino.", "referencia" => $referencia];
+        } catch (Exception $e) {
+            $this->conexion->rollBack();
+            return ["ok" => false, "mensaje" => $e->getMessage()];
+        }
+    }
+
+    /* ======================================================
+                        TRANSFERENCIAS
+    ====================================================== */
+
+    public function enviarTransferencia($usuario_id, $iban_destino, $titular_destino, $importe, $concepto = "Transferencia") {
+        try {
+            $this->conexion->beginTransaction();
+            if ($importe <= 0) throw new Exception("El importe debe ser mayor que cero.");
+
+            $stmt = $this->conexion->prepare("SELECT id, saldo FROM cuentas WHERE usuario_id = ?");
+            $stmt->execute([$usuario_id]);
+            $cuentaOrigen = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$cuentaOrigen) throw new Exception("No tienes cuenta bancaria.");
+            if ($cuentaOrigen['saldo'] < $importe) throw new Exception("Saldo insuficiente.");
+            if (trim($iban_destino) === '') throw new Exception("El IBAN destino no puede estar vacío.");
+
+            $stmt = $this->conexion->prepare("SELECT id FROM cuentas WHERE iban = ?");
+            $stmt->execute([$iban_destino]);
+            $cuentaDestino = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $this->conexion->prepare("UPDATE cuentas SET saldo = saldo - ? WHERE id = ?")->execute([$importe, $cuentaOrigen['id']]);
+            if ($cuentaDestino) {
+                $this->conexion->prepare("UPDATE cuentas SET saldo = saldo + ? WHERE id = ?")->execute([$importe, $cuentaDestino['id']]);
+            }
+
+            $referencia = uniqid("TRANS_");
+            $stmt = $this->conexion->prepare("INSERT INTO transacciones (cuenta_origen_id, cuenta_destino_id, importe, tipo, estado, concepto, referencia, ip_origen) VALUES (?, ?, ?, 'transferencia', 'completada', ?, ?, ?)");
+            $stmt->execute([$cuentaOrigen['id'], $cuentaDestino['id'] ?? null, $importe, $concepto, $referencia, $_SERVER['REMOTE_ADDR'] ?? null]);
+            $transaccion_id = $this->conexion->lastInsertId();
+
+            $stmt = $this->conexion->prepare("INSERT INTO transferencias (transaccion_id, iban_destino, titular_destino, concepto, requiere_verificacion) VALUES (?, ?, ?, ?, 1)");
+            $stmt->execute([$transaccion_id, $iban_destino, $titular_destino, $concepto]);
+
+            $this->conexion->commit();
+            return ["ok" => true, "mensaje" => "Transferencia realizada correctamente.", "referencia" => $referencia];
+        } catch (Exception $e) {
+            $this->conexion->rollBack();
+            return ["ok" => false, "mensaje" => $e->getMessage()];
+        }
+    }
+
+    /* ======================================================
+                CÓDIGOS DE VERIFICACIÓN
+    ====================================================== */
+
+    public function generarCodigoVerificacion($usuario_id) {
+        $codigo = random_int(10000, 99999);
+        $expiracion = date("Y-m-d H:i:s", strtotime("+10 minutes"));
+        $sql = "INSERT INTO codigos_verificacion (usuario_id, codigo, expira_en, usado) VALUES (?, ?, ?, 0)";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id, $codigo, $expiracion]);
+        return $codigo;
+    }
+
+    public function verificarCodigo($usuario_id, $codigo) {
+        $sql = "SELECT id FROM codigos_verificacion WHERE usuario_id = ? AND codigo = ? AND usado = 0 AND expira_en > NOW() ORDER BY id DESC LIMIT 1";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id, $codigo]);
+        $registro = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($registro) {
+            $this->conexion->prepare("UPDATE codigos_verificacion SET usado = 1 WHERE id = ?")->execute([$registro['id']]);
+            return true;
+        }
+        return false;
+    }
+
+    /* ======================================================
+                        NOTIFICACIONES
+    ====================================================== */
+
+    public function getNotificaciones($usuario_id, $solo_no_leidas = false) {
+        $sql = "SELECT * FROM notificaciones WHERE usuario_id = ?";
+        if ($solo_no_leidas) $sql .= " AND leida = 0";
+        $sql .= " ORDER BY created_at DESC LIMIT 20";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function marcarNotificacionesLeidas($usuario_id) {
+        $stmt = $this->conexion->prepare("UPDATE notificaciones SET leida = 1 WHERE usuario_id = ?");
+        return $stmt->execute([$usuario_id]);
+    }
+
+    public function contarNoLeidas($usuario_id) {
+        $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND leida = 0");
+        $stmt->execute([$usuario_id]);
+        return $stmt->fetchColumn();
+    }
+
+    /* ======================================================
+                        GENERAR IBAN
+    ====================================================== */
+
+    private function generarIBAN() {
+        do {
+            $iban = 'ES' . random_int(10, 99) .
+                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT) .
+                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT) .
+                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT) .
+                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT) .
+                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+            $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM cuentas WHERE iban = ?");
+            $stmt->execute([$iban]);
+        } while ($stmt->fetchColumn() > 0);
+        return $iban;
+    }
+}
+?>
