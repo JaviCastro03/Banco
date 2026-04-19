@@ -45,10 +45,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--eco-cream);min-height:100
 <body>
 <div class="reg-container">
   <div class="reg-header">
-    <div class="reg-logo">
-      <div class="reg-logo-icon">🌿</div>
-      <div class="reg-logo-text">EcoBank</div>
-    </div>
+      <div class="reg-logo" style="flex-direction:column; gap:10px;">
+          <img src="views/styles/logo.png" alt="Logo EcoBank" style="width:120px;">
+      </div>
     <h2>Crear cuenta</h2>
     <p>Únete a EcoBank y gestiona tus finanzas de forma sostenible.</p>
   </div>
@@ -85,8 +84,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--eco-cream);min-height:100
         </div>
         <div>
           <label class="eco-label">Fecha de nacimiento</label>
-          <div class="input-wrap">
-            <i class="bi bi-calendar input-icon"></i>
+          <div>
             <input type="date" name="fecha_nacimiento" class="eco-input">
           </div>
         </div>
@@ -106,7 +104,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--eco-cream);min-height:100
           <label class="eco-label">Teléfono *</label>
           <div class="input-wrap">
             <i class="bi bi-phone input-icon"></i>
-            <input type="tel" name="telefono" class="eco-input" placeholder="6XX XXX XXX" required>
+            <input type="tel" name="telefono" class="eco-input" placeholder="678478578" required>
           </div>
         </div>
       </div>
@@ -151,10 +149,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--eco-cream);min-height:100
           </div>
         </div>
       </div>
-      <div class="password-hint"><i class="bi bi-info-circle"></i> La contraseña debe tener al menos 6 caracteres.</div>
 
       <button type="submit" name="registrar" class="eco-btn-reg">
-        <i class="bi bi-person-plus-fill"></i> Crear cuenta EcoBank
+          Crear cuenta EcoBank
       </button>
     </form>
   </div>
