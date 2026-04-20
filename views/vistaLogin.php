@@ -106,11 +106,11 @@ body{font-family:'DM Sans',sans-serif;min-height:100vh;display:grid;grid-templat
 </head>
 <body>
 
-<!-- LEFT -->
 <div class="left-panel">
   <div class="left-logo">
-    <div class="left-logo-icon">🌿</div>
-    <div>
+      <div class="left-logo-icon">
+          <img src="views/styles/logo.png" alt="Logo EcoBank" style="width:100%; height:100%; object-fit:contain;">
+      </div>    <div>
       <div class="left-logo-text">EcoBank</div>
       <div class="left-logo-sub">Banca Sostenible</div>
     </div>
@@ -160,7 +160,7 @@ body{font-family:'DM Sans',sans-serif;min-height:100vh;display:grid;grid-templat
         </div>
       </div>
       <button type="submit" name="iniciarSesion" class="eco-btn-login">
-        <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+         Iniciar sesión
       </button>
     </form>
 
