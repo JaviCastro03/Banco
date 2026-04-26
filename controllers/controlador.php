@@ -40,7 +40,8 @@ if (isset($_POST["ajax"])) {
 
     if ($accion === "getGrafica") {
         if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
-        echo json_encode(["ok"=>true,"datos"=>$conexion->getDatosGrafica($_SESSION["idU"])]); exit;
+        $filtro = $_POST["filtro"] ?? "meses";
+        echo json_encode(["ok"=>true,"datos"=>$conexion->getDatosGrafica($_SESSION["idU"], $filtro)]); exit;
     }
 
     if ($accion === "getTarjeta") {
@@ -90,7 +91,7 @@ if (isset($_POST["ajax"])) {
         if (!$telefono||$importe<=0) { echo json_encode(["ok"=>false,"mensaje"=>"Datos inválidos."]); exit; }
         $codigo = $conexion->generarCodigoVerificacion($_SESSION["idU"]);
         $importeF = number_format($importe,2,',','.');
-        enviarCorreoGmail($_SESSION["email"],"Código Bizum - EcoBank","<div style='font-family:sans-serif;padding:20px'><h2 style='color:#1a3a2a'>🔐 Código de Verificación Bizum</h2><p>Bizum de <b>€$importeF</b> a <b>$telefono</b>. Concepto: <b>$concepto</b></p><div style='font-size:36px;font-weight:bold;letter-spacing:10px;color:#2d6a4f;text-align:center;padding:24px;background:#f0f7f4;border-radius:8px;margin:16px 0'>$codigo</div><p style='color:#888;font-size:12px'>Válido 10 minutos. Si no fuiste tú, ignora este email.</p></div>");
+        enviarCorreoGmail($_SESSION["email"],"Código Bizum - EcoBank","<div style='font-family:sans-serif;padding:20px'><h2 style='color:#1a3a2a'>Código de Verificación Bizum</h2><p>Bizum de <b>€$importeF</b> a <b>$telefono</b>. Concepto: <b>$concepto</b></p><div style='font-size:36px;font-weight:bold;letter-spacing:10px;color:#2d6a4f;text-align:center;padding:24px;background:#f0f7f4;border-radius:8px;margin:16px 0'>$codigo</div><p style='color:#888;font-size:12px'>Válido 10 minutos. Si no fuiste tú, ignora este email.</p></div>");
         $_SESSION["telefono_bizum"]=$telefono; $_SESSION["importe_bizum"]=$importe; $_SESSION["concepto_bizum"]=$concepto;
         echo json_encode(["ok"=>true,"mensaje"=>"Código enviado a ".$_SESSION["email"]]); exit;
     }
@@ -110,7 +111,7 @@ if (isset($_POST["ajax"])) {
         if (!$iban||$importe<=0||!$titular) { echo json_encode(["ok"=>false,"mensaje"=>"Datos inválidos."]); exit; }
         $codigo=$conexion->generarCodigoVerificacion($_SESSION["idU"]);
         $importeF=number_format($importe,2,',','.');
-        enviarCorreoGmail($_SESSION["email"],"Código Transferencia - EcoBank","<div style='font-family:sans-serif;padding:20px'><h2 style='color:#1a3a2a'>🔐 Código de Verificación Transferencia</h2><p>Transferencia de <b>€$importeF</b> a <b>$titular</b> (IBAN: $iban)</p><div style='font-size:36px;font-weight:bold;letter-spacing:10px;color:#2d6a4f;text-align:center;padding:24px;background:#f0f7f4;border-radius:8px;margin:16px 0'>$codigo</div><p style='color:#888;font-size:12px'>Válido 10 minutos.</p></div>");
+        enviarCorreoGmail($_SESSION["email"],"Código Transferencia - EcoBank","<div style='font-family:sans-serif;padding:20px'><h2 style='color:#1a3a2a'>Código de Verificación Transferencia</h2><p>Transferencia de <b>€$importeF</b> a <b>$titular</b> (IBAN: $iban)</p><div style='font-size:36px;font-weight:bold;letter-spacing:10px;color:#2d6a4f;text-align:center;padding:24px;background:#f0f7f4;border-radius:8px;margin:16px 0'>$codigo</div><p style='color:#888;font-size:12px'>Válido 10 minutos.</p></div>");
         $_SESSION["iban_trans"]=$iban; $_SESSION["titular_trans"]=$titular; $_SESSION["importe_trans"]=$importe; $_SESSION["concepto_trans"]=$concepto;
         echo json_encode(["ok"=>true,"mensaje"=>"Código enviado a ".$_SESSION["email"]]); exit;
     }
@@ -164,7 +165,7 @@ if ($_SESSION["ruta"] === "registro") {
         if (!UsuarioDDBB::comprobarPassword($_POST["password"],$_POST["cpassword"])) { $_SESSION["mensaje"]="Las contraseñas no coinciden"; header("Location: index.php"); exit; }
         if ($conexion->dniExiste($_POST["dni"])) { $_SESSION["mensaje"]="El DNI ya está registrado"; header("Location: index.php"); exit; }
         if ($conexion->insertarUsuario($_POST["dni"],$_POST["nombre"],$_POST["apellidos"],$_POST["email"],$_POST["telefono"]??'',$_POST["password"],$_POST["fecha_nacimiento"]??null,$_POST["provincia"],$_POST["municipio"],$_POST["via"],$_POST["numero_piso"])) {
-            $msg="<div style='font-family:sans-serif;padding:20px'><h2 style='color:#1a3a2a'>✅ Verifica tu cuenta EcoBank</h2><p>Hola <b>".$_POST["nombre"]."</b>, pulsa para activar tu cuenta:</p><a href='http://localhost/banco/banco/controllers/verificar/verificar.php?email=".urlencode($_POST["email"])."' style='display:inline-block;padding:12px 24px;background:#2d6a4f;color:white;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:12px'>Verificar cuenta</a></div>";
+            $msg="<div style='font-family:sans-serif;padding:20px'><h2 style='color:#1a3a2a'>Verifica tu cuenta EcoBank</h2><p>Hola <b>".$_POST["nombre"]."</b>, pulsa para activar tu cuenta:</p><a href='http://localhost/banco/banco/controllers/verificar/verificar.php?email=".urlencode($_POST["email"])."' style='display:inline-block;padding:12px 24px;background:#2d6a4f;color:white;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:12px'>Verificar cuenta</a></div>";
             $_SESSION["mensaje"] = enviarCorreoGmail($_POST["email"],"Verifica tu cuenta EcoBank",$msg) ? "Revisa tu correo para activar la cuenta" : "No se pudo enviar el correo";
         } else { $_SESSION["mensaje"]="Error al registrar usuario"; }
         header("Location: index.php"); exit;

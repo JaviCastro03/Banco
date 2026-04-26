@@ -239,17 +239,40 @@ class UsuarioDDBB {
         return $res ?: ['enviado' => 0, 'recibido' => 0, 'num_enviadas' => 0];
     }
 
-    public function getDatosGrafica($usuario_id) {
+    public function getDatosGrafica($usuario_id, $filtro = 'meses') {
+        switch ($filtro) {
+            case 'dias':
+                $formato  = '%Y-%m-%d';
+                $intervalo = '30 DAY';
+                $label    = 'dia';
+                break;
+            case 'semanas':
+                $formato  = '%x-W%v';
+                $intervalo = '12 WEEK';
+                $label    = 'semana';
+                break;
+            case 'años':
+                $formato  = '%Y';
+                $intervalo = '5 YEAR';
+                $label    = 'año';
+                break;
+            default: // meses
+                $formato  = '%Y-%m';
+                $intervalo = '6 MONTH';
+                $label    = 'mes';
+                break;
+        }
+
         $sql = "SELECT
-                    DATE_FORMAT(t.fecha, '%Y-%m') as mes,
-                    COALESCE(SUM(CASE WHEN t.cuenta_origen_id = c.id AND t.estado='completada' THEN t.importe ELSE 0 END), 0) as gastado,
-                    COALESCE(SUM(CASE WHEN t.cuenta_destino_id = c.id AND t.estado='completada' THEN t.importe ELSE 0 END), 0) as recibido
-                FROM transacciones t
-                JOIN cuentas c ON (t.cuenta_origen_id = c.id OR t.cuenta_destino_id = c.id)
-                WHERE c.usuario_id = ?
-                AND t.fecha >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-                GROUP BY DATE_FORMAT(t.fecha, '%Y-%m')
-                ORDER BY mes ASC";
+                DATE_FORMAT(t.fecha, '$formato') as periodo,
+                COALESCE(SUM(CASE WHEN t.cuenta_origen_id = c.id AND t.estado='completada' THEN t.importe ELSE 0 END), 0) as gastado,
+                COALESCE(SUM(CASE WHEN t.cuenta_destino_id = c.id AND t.estado='completada' THEN t.importe ELSE 0 END), 0) as recibido
+            FROM transacciones t
+            JOIN cuentas c ON (t.cuenta_origen_id = c.id OR t.cuenta_destino_id = c.id)
+            WHERE c.usuario_id = ?
+            AND t.fecha >= DATE_SUB(NOW(), INTERVAL $intervalo)
+            GROUP BY DATE_FORMAT(t.fecha, '$formato')
+            ORDER BY periodo ASC";
         $stmt = $this->conexion->prepare($sql);
         $stmt->execute([$usuario_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
