@@ -20,6 +20,7 @@ if (!isset($_SESSION["idU"])) { $_SESSION["ruta"]="login"; header("Location: ind
 <!-- ══════════════ SIDEBAR ══════════════ -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
+        <div class="logo-icon"><img src="views/styles/logo.png" alt="Logo EcoBank" style="width:100%; height:100%; object-fit:contain;"></div>        <div>
         <div class="logo-icon"><img src="views/styles/logo.png" alt="Logo EcoBank" style="width:100%; height:100%; object-fit:contain;"></div>
         <div>
             <div class="logo-text">EcoBank</div>
