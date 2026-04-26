@@ -26,7 +26,7 @@ class UsuarioDDBB {
     }
 
     public function insertarUsuario($dni, $nombre, $apellidos, $email, $telefono, $password,
-        $fecha_nacimiento, $provincia, $municipio, $via, $numero_piso) {
+                                    $fecha_nacimiento, $provincia, $municipio, $via, $numero_piso) {
         try {
             $this->conexion->beginTransaction();
             $password_hash = password_hash($password, PASSWORD_DEFAULT);
@@ -107,7 +107,7 @@ class UsuarioDDBB {
     }
 
     public function actualizarPerfil($usuario_id, $nombre, $apellidos, $email, $telefono,
-        $provincia, $municipio, $via, $numero_piso) {
+                                     $provincia, $municipio, $via, $numero_piso) {
         $sql = "UPDATE usuarios SET nombre=?, apellidos=?, email=?, telefono=?,
                 provincia=?, municipio=?, via=?, numero_piso=?, updated_at=NOW() WHERE id=?";
         $stmt = $this->conexion->prepare($sql);
