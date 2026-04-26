@@ -4,13 +4,46 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0d605471-9959-4094-a36b-8f2653411b78" name="Changes" comment="" />
+    <list default="true" id="0d605471-9959-4094-a36b-8f2653411b78" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/phpunit.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/phpunit.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensed.cw.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensed.cw127.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensed.gid.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensed.mtx.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedB.cw.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedB.cw127.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedB.gid.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedB.mtx.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedBI.cw.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedBI.cw127.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedBI.gid.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedBI.mtx.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedI.cw.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedI.gid.dat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/mpdf/mpdf/tmp/mpdf/ttfontdata/dejavuserifcondensedI.mtx.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/phpmailer/phpmailer/test/Fixtures/HasLineLongerThanMaxTest/cert.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/banco/models/vendor/phpmailer/phpmailer/test/Fixtures/HasLineLongerThanMaxTest/key.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/vistaDashboardUsuario.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/vistaDashboardUsuario.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ComposerSettings">
+  <component name="ComposerConfigs">
+    <option name="configs">
+      <option value="$PROJECT_DIR$/models/vendor_old/paragonie/random_compat/composer.json" />
+      <option value="$PROJECT_DIR$/models/vendor_old/psr/log/composer.json" />
+      <option value="$PROJECT_DIR$/models/vendor_old/myclabs/deep-copy/composer.json" />
+      <option value="$PROJECT_DIR$/models/vendor_old/econea/nusoap/composer.json" />
+      <option value="$PROJECT_DIR$/models/vendor_old/psr/http-message/composer.json" />
+      <option value="$PROJECT_DIR$/models/vendor_old/phpmailer/phpmailer/composer.json" />
+      <option value="$PROJECT_DIR$/models/vendor_old/setasign/fpdi/composer.json" />
+    </option>
+  </component>
+  <component name="ComposerSettings" synchronizationState="SYNCHRONIZE">
+    <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
     <execution />
   </component>
   <component name="FileTemplateManagerImpl">
@@ -23,6 +56,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Alejaandroogr"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/luiismi22/banco",
+    "accountId": "3f4c19fc-11cf-47de-ae56-807cc5eca6ae"
+  }
+}]]></component>
   <component name="PhpDebugGeneral" break_at_first_line="true" />
   <component name="PhpServers">
     <servers>
@@ -38,25 +83,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/xampp/htdocs/banco&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "alejandro",
+    "last_opened_file_path": "C:/xampp/htdocs/banco",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\xampp\htdocs\tareas\antoniob\tarea23\controllers\verificar" />
       <recent name="C:\xampp\htdocs\tareas\antoniob\tarea23\views" />
       <recent name="C:\xampp\htdocs\tareas\antoniob\tarea23\models" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="ComposerRunConfigurationType" factoryName="Composer Script">
+      <option name="pathToComposerJson" value="$PROJECT_DIR$/composer.json" />
+      <method v="2" />
+    </configuration>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -76,6 +130,7 @@
       <workItem from="1765205162518" duration="4500000" />
       <workItem from="1765209685186" duration="1512000" />
       <workItem from="1775417633158" duration="701000" />
+      <workItem from="1777223019523" duration="2081000" />
     </task>
     <servers />
   </component>
