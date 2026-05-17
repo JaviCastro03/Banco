@@ -334,41 +334,97 @@ function copiarIban() {
     navigator.clipboard.writeText(iban).then(()=>showAlert('alertPerfil','IBAN copiado al portapapeles.','success'));
 }
 
-/* ═══════════════════════════════════════════
-   BIZUM
-═══════════════════════════════════════════ */
+
 function solicitarCodigoBizum() {
     const tel  = document.getElementById('bizumTel').value.trim();
     const imp  = document.getElementById('bizumImporte').value;
     const conc = document.getElementById('bizumConcepto').value.trim();
-    if(!tel||!imp||parseFloat(imp)<=0){showAlert('alertBizum','Rellena el teléfono y el importe correctamente.','error');return;}
-    const btn=document.getElementById('btnEnviarBizum');
-    btn.disabled=true; btn.innerHTML='<span class="spinner-eco"></span> Enviando...';
-    ajax({accion:'solicitarCodigoBizum',telefono:tel,importe:imp,concepto:conc||'Bizum'}, r=>{
-        btn.disabled=false; btn.innerHTML='<i class="bi bi-lightning-charge-fill"></i> Enviar Bizum';
-        if(r.ok){showAlert('alertBizum',r.mensaje,'success'); abrirModal('modalBizum'); limpiarCodeInputs('codeInputsBizum');}
-        else showAlert('alertBizum',r.mensaje,'error');
+
+    if (!tel || !imp || parseFloat(imp) <= 0) {
+        showAlert('alertBizum', 'Rellena el teléfono y el importe correctamente.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('btnEnviarBizum');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-eco"></span> Enviando...';
+
+    ajax({
+        accion: 'solicitarCodigoBizum',
+        telefono: tel,
+        importe: imp,
+        concepto: conc || 'Bizum'
+    }, r => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-lightning-charge-fill"></i> Enviar Bizum';
+
+        if (r.ok) {
+            showAlert('alertBizum', r.mensaje, 'success');
+            abrirModal('modalBizum');
+            limpiarCodeInputs('codeInputsBizum');
+        } else {
+            showAlert('alertBizum', r.mensaje, 'error');
+        }
     });
 }
 
 function confirmarBizum() {
     const codigo = getCodeValue('codeInputsBizum');
-    if(codigo.length!==5){showAlert('alertCodBizum','Introduce los 5 dígitos del código.','error');return;}
-    const btn=document.getElementById('btnConfBizum');
-    btn.disabled=true; btn.innerHTML='<span class="spinner-eco"></span>';
-    ajax({accion:'confirmarBizum',codigo}, r=>{
-        btn.disabled=false; btn.innerHTML='<i class="bi bi-check2-circle"></i> Confirmar';
-        if(r.ok){
+
+    if (codigo.length !== 5) {
+        showAlert('alertCodBizum', 'Introduce los 5 dígitos del código.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('btnConfBizum');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-eco"></span>';
+
+    ajax({ accion: 'confirmarBizum', codigo }, r => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check2-circle"></i> Confirmar';
+
+        if (r.ok) {
             cerrarModal('modalBizum');
-            showAlert('alertBizum',r.mensaje,'success');
-            document.getElementById('bizumTel').value='';
-            document.getElementById('bizumImporte').value='';
-            document.getElementById('bizumConcepto').value='';
+            showAlert('alertBizum', r.mensaje, 'success');
+
+            document.getElementById('bizumTel').value = '';
+            document.getElementById('bizumImporte').value = '';
+            document.getElementById('bizumConcepto').value = '';
+
             loadDashboard();
-        } else showAlert('alertCodBizum',r.mensaje,'error');
+            cargarUltimosBizum();
+
+        } else {
+            showAlert('alertCodBizum', r.mensaje, 'error');
+        }
     });
 }
 
+function cargarUltimosBizum() {
+    ajax({ accion: 'ultimosBizum' }, r => {
+        const cont = document.getElementById('bizumRecientes');
+
+        if (!cont) return;
+
+        if (!r.ok || !r.datos || !r.datos.length) {
+            cont.innerHTML = '<span class="text-muted">Sin contactos recientes</span>';
+            return;
+        }
+
+        cont.innerHTML = r.datos.map(x => `
+            <button
+                class="eco-btn eco-btn-outline"
+                onclick="seleccionarBizum('${x.telefono_destino}')">
+                ${htmlE(x.nombre_destino)}
+            </button>
+        `).join('');
+    });
+}
+
+function seleccionarBizum(telefono) {
+    document.getElementById('bizumTel').value = telefono;
+}
 /* ═══════════════════════════════════════════
    TRANSFERENCIA
 ═══════════════════════════════════════════ */
@@ -494,9 +550,17 @@ function htmlE(str) {
 /* ═══════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', () => {
     loadDashboard();
-    ajax({accion:'getNotificaciones'}, r=>{
-        if(r.ok){ const n=r.no_leidas||0; const b=document.getElementById('notifBadge'); b.textContent=n; b.style.display=n>0?'flex':'none'; }
+    cargarUltimosBizum();
+
+    ajax({ accion:'getNotificaciones' }, r => {
+        if (r.ok) {
+            const n = r.no_leidas || 0;
+            const b = document.getElementById('notifBadge');
+
+            b.textContent = n;
+            b.style.display = n > 0 ? 'flex' : 'none';
+        }
     });
 });
