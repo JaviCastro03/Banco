@@ -1,0 +1,253 @@
+/* ══════════════════════════════════════════
+   ADMIN PANEL — Estilos específicos
+   Complementa dashboard.css sin sobreescribirlo
+══════════════════════════════════════════ */
+
+/* ── ADMIN IDENTITY ── */
+.admin-avatar {
+    background: linear-gradient(135deg, #1e3a5f, #2d6a9f) !important;
+}
+
+.admin-role-label {
+    color: #74b3e0 !important;
+}
+
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, rgba(30,58,95,.12), rgba(45,106,159,.08));
+    border: 1px solid rgba(45,106,159,.25);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e3a5f;
+    letter-spacing: .3px;
+}
+
+/* Sidebar admin — mantiene el mismo verde del usuario pero con sub-label diferente */
+.sidebar .logo-sub {
+    /* Heredado, solo cambia el contenido via PHP */
+}
+
+/* ── TABLA DE USUARIOS ── */
+.admin-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--eco-mid), var(--eco-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.admin-user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--eco-text);
+    line-height: 1.2;
+}
+
+.admin-user-id {
+    font-size: 11px;
+    color: var(--eco-muted);
+}
+
+/* ── ROL BADGES ── */
+.rol-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.rol-admin    { background: rgba(30,58,95,.1);  color: #1e3a5f; }
+.rol-usuario  { background: var(--eco-pale);     color: var(--eco-primary); }
+.rol-noverif  { background: #fff3cd;             color: #856404; }
+
+/* ── ACCIONES EN TABLA ── */
+.admin-acciones {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.btn-accion {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1.5px solid var(--eco-border);
+    background: var(--eco-white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--eco-muted);
+    transition: all .18s;
+}
+
+.btn-accion:hover {
+    border-color: var(--eco-primary);
+    color: var(--eco-primary);
+    background: var(--eco-pale);
+}
+
+.btn-accion.danger:hover {
+    border-color: #e63946;
+    color: #e63946;
+    background: #fde8ea;
+}
+
+.btn-accion.info:hover {
+    border-color: #0369a1;
+    color: #0369a1;
+    background: #e0f2fe;
+}
+
+/* ── DIRECCIÓN CELL ── */
+.addr-cell {
+    font-size: 12px;
+    color: var(--eco-muted);
+    line-height: 1.5;
+    max-width: 180px;
+}
+
+/* ── SALDO POSITIVO / NEGATIVO ── */
+.saldo-positivo { color: var(--eco-primary); font-weight: 600; }
+.saldo-cero     { color: var(--eco-muted);   font-weight: 500; }
+
+/* ── CUENTA ESTADO ── */
+.cuenta-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.cuenta-activa   { background: var(--eco-pale); color: var(--eco-primary); }
+.cuenta-inactiva { background: #f3f4f6;         color: #6b7280; }
+
+/* ── IBAN DISPLAY ── */
+.iban-mini {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: .5px;
+    color: var(--eco-text);
+}
+
+/* ── MODAL HISTORIAL INTERNO ── */
+.hist-modal-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.hist-modal-table th {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--eco-muted);
+    font-weight: 600;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--eco-border);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.hist-modal-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--eco-border);
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.hist-modal-table tr:last-child td { border-bottom: none; }
+.hist-modal-table tr:hover td { background: var(--eco-cream); }
+
+.hist-modal-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* ── USUARIO HEADER EN MODAL ── */
+.usuario-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: var(--eco-cream);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.usuario-modal-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--eco-primary), var(--eco-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.usuario-modal-nombre {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--eco-text);
+    line-height: 1.2;
+}
+
+.usuario-modal-email {
+    font-size: 12px;
+    color: var(--eco-muted);
+    margin-top: 2px;
+}
+
+.usuario-modal-saldo {
+    margin-left: auto;
+    text-align: right;
+}
+
+.usuario-modal-saldo-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--eco-muted);
+    margin-bottom: 2px;
+}
+
+.usuario-modal-saldo-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--eco-primary);
+}
+
+/* ── STATS ADMIN RESPONSIVE ── */
+@media (max-width: 768px) {
+    .admin-acciones { gap: 4px; }
+    .addr-cell { display: none; }
+    .iban-mini { font-size: 10px; letter-spacing: 0; }
+}

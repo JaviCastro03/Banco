@@ -1,0 +1,10 @@
+{
+    "name": "javi/banco",
+    "authors": [
+        {
+            "name": "Javi",
+            "email": "javiercastromuriana2006@gmail.com"
+        }
+    ],
+    "require": {}
+}
