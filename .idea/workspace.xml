@@ -5,12 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0d605471-9959-4094-a36b-8f2653411b78" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/views/secciones/seccionGrafica.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/views/js/admin.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminCuentas.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminMovimientos.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminResumen.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminUsuarios.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/views/styles/admin.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/controlador.php" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/controlador.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/UsuarioDDBB.php" beforeDir="false" afterPath="$PROJECT_DIR$/models/UsuarioDDBB.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/js/dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/views/js/dashboard.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/vistaDashboardUsuario.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/vistaDashboardUsuario.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,18 +43,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "Alejaandroogr"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Alejaandroogr&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/luiismi22/banco",
-    "accountId": "3f4c19fc-11cf-47de-ae56-807cc5eca6ae"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/luiismi22/banco&quot;,
+    &quot;accountId&quot;: &quot;3f4c19fc-11cf-47de-ae56-807cc5eca6ae&quot;
   }
-}]]></component>
+}</component>
   <component name="PhpDebugGeneral" break_at_first_line="true" />
   <component name="PhpServers">
     <servers>
@@ -69,22 +70,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "alejandro",
-    "last_opened_file_path": "C:/xampp/htdocs/banco/views/secciones",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;alejandro&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/xampp/htdocs/banco/views/secciones&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\xampp\htdocs\banco\views\secciones" />
@@ -92,12 +93,6 @@
       <recent name="C:\xampp\htdocs\tareas\antoniob\tarea23\views" />
       <recent name="C:\xampp\htdocs\tareas\antoniob\tarea23\models" />
     </key>
-  </component>
-  <component name="RunManager">
-    <configuration default="true" type="ComposerRunConfigurationType" factoryName="Composer Script">
-      <option name="pathToComposerJson" value="$PROJECT_DIR$/composer.json" />
-      <method v="2" />
-    </configuration>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
