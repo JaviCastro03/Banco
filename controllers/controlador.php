@@ -167,13 +167,42 @@ if (isset($_POST["bizum"]))     $_SESSION["ruta"] = "bizumUsuario";
 
 if ($_SESSION["ruta"] === "login") {
     if (isset($_POST["iniciarSesion"])) {
-        if (!$conexion->emailExiste($_POST["email"])) { $_SESSION["mensaje"]="Credenciales incorrectas"; header("Location: index.php"); exit; }
-        if (!password_verify($_POST["password"], $conexion->getPasswordHash($_POST["email"]))) { $_SESSION["mensaje"]="Credenciales incorrectas"; header("Location: index.php"); exit; }
+
+        if (!$conexion->emailExiste($_POST["email"])) {
+            $_SESSION["mensaje"] = "Credenciales incorrectas";
+            header("Location: index.php");
+            exit;
+        }
+
+        if (!password_verify($_POST["password"], $conexion->getPasswordHash($_POST["email"]))) {
+            $_SESSION["mensaje"] = "Credenciales incorrectas";
+            header("Location: index.php");
+            exit;
+        }
+
         $rol = $conexion->getRol($_POST["email"]);
-        if ($rol == 0) { $_SESSION["mensaje"]="Debes verificar tu correo"; header("Location: index.php"); exit; }
-        $_SESSION["idU"]=$conexion->getIdUsuario($_POST["email"]); $_SESSION["nombre"]=$conexion->getNombreUsuario($_POST["email"]); $_SESSION["email"]=$_POST["email"]; $_SESSION["rol"]=$rol;
-        $_SESSION["ruta"]=($rol==2)?"admin":"dashboard";
-        header("Location: index.php"); exit;
+
+        if ($rol == 0) {
+            $_SESSION["mensaje"] = "Debes verificar tu correo";
+            header("Location: index.php");
+            exit;
+        }
+
+        $_SESSION["idU"] = $conexion->getIdUsuario($_POST["email"]);
+        $_SESSION["nombre"] = $conexion->getNombreUsuario($_POST["email"]);
+        $_SESSION["email"] = $_POST["email"];
+        $_SESSION["rol"] = $rol;
+
+        $conexion->crearNotificacion(
+            $_SESSION["idU"],
+            "Login",
+            "Has iniciado sesión correctamente"
+        );
+
+        $_SESSION["ruta"] = ($rol == 2) ? "admin" : "dashboard";
+
+        header("Location: index.php");
+        exit;
     }
     require_once "./views/vistaLogin.php";
 }

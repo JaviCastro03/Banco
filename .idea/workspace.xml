@@ -5,13 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0d605471-9959-4094-a36b-8f2653411b78" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/views/js/admin.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminCuentas.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminMovimientos.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminResumen.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminUsuarios.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/styles/admin.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/controlador.php" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/controlador.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/UsuarioDDBB.php" beforeDir="false" afterPath="$PROJECT_DIR$/models/UsuarioDDBB.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,19 +45,19 @@
     &quot;assignee&quot;: &quot;Alejaandroogr&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/luiismi22/banco&quot;,
-    &quot;accountId&quot;: &quot;3f4c19fc-11cf-47de-ae56-807cc5eca6ae&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/luiismi22/banco.git",
+    "accountId": "101e27cf-c363-4418-a4cf-a7c8a9770cbb"
   }
-}</component>
+}]]></component>
   <component name="PhpDebugGeneral" break_at_first_line="true" />
   <component name="PhpServers">
     <servers>
       <server host="localhost" id="183e2948-8fce-4d64-941d-5e987d0a295b" name="localhost" />
     </servers>
   </component>
-  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP" />
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="luismip/php-apache:8.2" />
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -70,22 +66,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;alejandro&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/xampp/htdocs/banco/views/secciones&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "luismi",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/xampp/htdocs/banco/views/secciones",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\xampp\htdocs\banco\views\secciones" />
@@ -113,6 +111,7 @@
       <workItem from="1765209685186" duration="1512000" />
       <workItem from="1775417633158" duration="701000" />
       <workItem from="1777223019523" duration="5134000" />
+      <workItem from="1779039531955" duration="398000" />
     </task>
     <servers />
   </component>
