@@ -4,10 +4,10 @@
     <option name="directories">
       <list>
         <option value="$PROJECT_DIR$/models/vendor_old/myclabs/deep-copy/tests/DeepCopyTest" />
+        <option value="$PROJECT_DIR$/models/vendor_old/paragonie/random_compat/tests/unit" />
         <option value="$PROJECT_DIR$/models/vendor_old/setasign/fpdi/tests/unit" />
         <option value="$PROJECT_DIR$/models/vendor_old/setasign/fpdi/tests/functional" />
         <option value="$PROJECT_DIR$/models/vendor_old/setasign/fpdi/tests/visual" />
-        <option value="$PROJECT_DIR$/models/vendor_old/paragonie/random_compat/tests/unit" />
       </list>
     </option>
   </component>

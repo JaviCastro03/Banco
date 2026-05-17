@@ -22,6 +22,35 @@ if (isset($_POST["ajax"])) {
     if ($accion === "eliminar")  { echo json_encode(["ok" => $conexion->eliminarUsuario($_POST["id"])]); exit; }
     if ($accion === "historial") { echo json_encode($conexion->getHistorialUsuario($_POST["id"])); exit; }
 
+    if ($accion === "adminResumen") {
+        if (!isset($_SESSION["idU"]) || ($_SESSION["rol"] ?? 0) != 2) { echo json_encode(["ok"=>false]); exit; }
+        echo json_encode(["ok"=>true, "datos"=>$conexion->getResumenAdmin()]); exit;
+    }
+
+    if ($accion === "adminHistorialConCuenta") {
+        if (!isset($_SESSION["idU"]) || ($_SESSION["rol"] ?? 0) != 2) { echo json_encode(["ok"=>false]); exit; }
+        $id = intval($_POST["id"] ?? 0);
+        echo json_encode([
+            "ok"       => true,
+            "historial"=> $conexion->getHistorialUsuario($id),
+            "cuenta"   => $conexion->getCuentaUsuario($id)
+        ]); exit;
+    }
+
+    if ($accion === "adminCuentas") {
+        if (!isset($_SESSION["idU"]) || ($_SESSION["rol"] ?? 0) != 2) { echo json_encode(["ok"=>false]); exit; }
+        echo json_encode(["ok"=>true, "cuentas"=>$conexion->getAllCuentas()]); exit;
+    }
+
+    if ($accion === "adminMovimientos") {
+        if (!isset($_SESSION["idU"]) || ($_SESSION["rol"] ?? 0) != 2) { echo json_encode(["ok"=>false]); exit; }
+        echo json_encode([
+            "ok"         => true,
+            "movimientos"=> $conexion->getAllMovimientos(),
+            "stats"      => $conexion->getStatsMovimientos()
+        ]); exit;
+    }
+
     // USUARIO
     if ($accion === "getDashboard") {
         if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }

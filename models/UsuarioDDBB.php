@@ -455,5 +455,64 @@ class UsuarioDDBB {
         } while ($stmt->fetchColumn() > 0);
         return $iban;
     }
+
+    /* ======================================================
+                    ADMINISTRACION - RESUMEN
+    ====================================================== */
+
+    public function getResumenAdmin() {
+        $total_usuarios = $this->conexion->query("SELECT COUNT(*) FROM usuarios WHERE activo = 1")->fetchColumn();
+        $usuarios_verificados = $this->conexion->query("SELECT COUNT(*) FROM usuarios WHERE activo = 1 AND rol >= 1")->fetchColumn();
+        $total_cuentas = $this->conexion->query("SELECT COUNT(*) FROM cuentas WHERE activa = 1")->fetchColumn();
+        $total_transacciones = $this->conexion->query("SELECT COUNT(*) FROM transacciones")->fetchColumn();
+        $trans_este_mes = $this->conexion->query(
+            "SELECT COUNT(*) FROM transacciones WHERE MONTH(fecha) = MONTH(NOW()) AND YEAR(fecha) = YEAR(NOW())"
+        )->fetchColumn();
+        $stmt = $this->conexion->query(
+            "SELECT nombre, apellidos, email, rol FROM usuarios WHERE activo = 1 ORDER BY id DESC LIMIT 5"
+        );
+        $ultimos_usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return compact('total_usuarios', 'usuarios_verificados', 'total_cuentas',
+                       'total_transacciones', 'trans_este_mes', 'ultimos_usuarios');
+    }
+
+    public function getCuentaUsuario($usuario_id) {
+        $sql = "SELECT c.*, CONCAT(u.nombre, ' ', u.apellidos) as titular, u.email
+                FROM cuentas c JOIN usuarios u ON u.id = c.usuario_id
+                WHERE c.usuario_id = ? AND c.activa = 1 LIMIT 1";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function getAllCuentas() {
+        $sql = "SELECT c.*, CONCAT(u.nombre, ' ', u.apellidos) as titular, u.email, u.id as usuario_id
+                FROM cuentas c JOIN usuarios u ON u.id = c.usuario_id
+                WHERE u.activo = 1 ORDER BY c.id DESC";
+        $stmt = $this->conexion->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getAllMovimientos() {
+        $sql = "SELECT t.id, t.tipo, t.importe, t.estado, t.concepto, t.referencia, t.fecha,
+                    co.iban as cuenta_origen_iban,
+                    CASE WHEN t.tipo = 'bizum' THEN b.nombre_destino
+                         WHEN t.tipo = 'transferencia' THEN tf.titular_destino ELSE NULL END as destinatario
+                FROM transacciones t
+                LEFT JOIN cuentas co ON co.id = t.cuenta_origen_id
+                LEFT JOIN bizum b ON b.transaccion_id = t.id
+                LEFT JOIN transferencias tf ON tf.transaccion_id = t.id
+                ORDER BY t.fecha DESC LIMIT 500";
+        $stmt = $this->conexion->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getStatsMovimientos() {
+        $total = $this->conexion->query("SELECT COUNT(*) FROM transacciones")->fetchColumn();
+        $este_mes = $this->conexion->query("SELECT COUNT(*) FROM transacciones WHERE MONTH(fecha)=MONTH(NOW()) AND YEAR(fecha)=YEAR(NOW())")->fetchColumn();
+        $vol_bizum = $this->conexion->query("SELECT COALESCE(SUM(importe),0) FROM transacciones WHERE tipo='bizum' AND estado='completada'")->fetchColumn();
+        $vol_trans = $this->conexion->query("SELECT COALESCE(SUM(importe),0) FROM transacciones WHERE tipo='transferencia' AND estado='completada'")->fetchColumn();
+        return compact('total', 'este_mes', 'vol_bizum', 'vol_trans');
+    }
 }
 ?>
