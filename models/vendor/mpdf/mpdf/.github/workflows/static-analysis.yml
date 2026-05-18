@@ -41,4 +41,4 @@ jobs:
         run: "composer install --no-interaction --no-progress && composer require \"phpstan/phpstan:^2.0\""
 
       - name: "Static Analysis check"
-        run: vendor_old/bin/phpstan --no-progress
+        run: vendor/bin/phpstan --no-progress

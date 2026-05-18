@@ -1,7 +1,3 @@
-/* ═══════════════════════════════════════════
-   ADMIN PANEL — admin.js
-   Sigue la misma estructura que dashboard.js
-═══════════════════════════════════════════ */
 const CONTROLLER = 'index.php';
 
 let todosLosUsuarios   = [];

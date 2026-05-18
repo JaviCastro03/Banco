@@ -48,6 +48,9 @@ if (!isset($_SESSION["idU"])) { $_SESSION["ruta"]="login"; header("Location: ind
         <div class="nav-item" data-section="tarjeta" onclick="showSection('tarjeta',this)">
             <i class="bi bi-credit-card-2-front-fill"></i><span>Mi Tarjeta</span>
         </div>
+        <div class="nav-item" data-section="simulaciones" onclick="showSection('simulaciones',this)">
+            <i class="bi bi-graph-up-arrow"></i><span>Simulaciones</span>
+        </div>
         <div class="nav-item" data-section="perfil" onclick="showSection('perfil',this)">
             <i class="bi bi-person-circle"></i><span>Mi Perfil</span>
         </div>
@@ -115,6 +118,9 @@ if (!isset($_SESSION["idU"])) { $_SESSION["ruta"]="login"; header("Location: ind
 
         <!-- ════════ PERFIL ════════ -->
         <?php include __DIR__ . '/secciones/seccionPerfil.php'; ?>
+
+        <!-- ════════ SIMULACIONES ════════ -->
+        <?php include __DIR__ . '/secciones/seccionSimulaciones.php'; ?>
 
     </main><!-- /page-content -->
 </div><!-- /main-content -->
