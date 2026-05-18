@@ -111,7 +111,7 @@ use setasign\Fpdi\Fpdi;
 // use setasign\Fpdi\Tfpdf\Fpdi;
 
 // setup the autoload function
-require_once('vendor_old/autoload.php');
+require_once('vendor/autoload.php');
 
 // initiate FPDI
 $pdf = new Fpdi();

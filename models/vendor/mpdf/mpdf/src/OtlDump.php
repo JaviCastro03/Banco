@@ -259,7 +259,7 @@ class OtlDump
 				}
 				$xchecksum = $t['checksum'];
 				if ($xchecksum != $checksum) {
-					throw new \Mpdf\Exception\FontException(sprintf('TTF file "%s": invalid checksum %s table: %s (expected %s)', $this->filename, OtlDump . phpdechex($checksum[0]) . dechex($checksum[1]), $t['tag'], dechex($xchecksum[0]) . dechex($xchecksum[1])));
+					throw new \Mpdf\Exception\FontException(sprintf('TTF file "%s": invalid checksum %s table: %s (expected %s)', $this->filename, dechex($checksum[0]) . dechex($checksum[1]), $t['tag'], dechex($xchecksum[0]) . dechex($xchecksum[1])));
 				}
 			}
 		}
@@ -408,7 +408,7 @@ class OtlDump
 
 	function splice($stream, $offset, $value)
 	{
-		return OtlDump . phpsubstr($stream, 0, $offset) . $value . substr($stream, $offset + strlen($value));
+		return substr($stream, 0, $offset) . $value . substr($stream, $offset + strlen($value));
 	}
 
 	function _set_ushort($stream, $offset, $value)

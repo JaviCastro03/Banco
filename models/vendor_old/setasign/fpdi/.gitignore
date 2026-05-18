@@ -1,6 +1,0 @@
-/.idea
-/**/vendor
-/phpstan.phar
-/composer.phar
-/tests/visual/**/compare/
-/**/.phpunit.result.cache

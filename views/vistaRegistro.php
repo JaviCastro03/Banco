@@ -85,7 +85,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--eco-cream);min-height:100
         <div>
           <label class="eco-label">Fecha de nacimiento</label>
           <div>
-            <input type="date" name="fecha_nacimiento" class="eco-input">
+            <input type="date" name="fecha_nacimiento" class="eco-input" required max="<?php echo date('Y-m-d', strtotime('-18 years')); ?>" title="Debes tener al menos 18 años para registrarte">
           </div>
         </div>
       </div>
