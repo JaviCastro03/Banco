@@ -63,7 +63,7 @@ The simplest usage (since version 7.0) of the library would be as follows:
 ```php
 <?php
 
-require_once __DIR__ . '/vendor_old/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 $mpdf = new \Mpdf\Mpdf();
 $mpdf->WriteHTML('<h1>Hello world!</h1>');

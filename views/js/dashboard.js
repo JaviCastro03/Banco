@@ -14,13 +14,14 @@ function showSection(name, el) {
         const found = document.querySelector('[data-section="'+name+'"]');
         if (found) found.classList.add('active');
     }
-    const titles = {inicio:'Inicio <span>/ Dashboard</span>',bizum:'Bizum <span>/ Enviar</span>',transferencia:'Transferencia <span>/ Nueva</span>',historial:'Historial <span>/ Movimientos</span>',grafica:'Análisis <span>/ Gráfica</span>',tarjeta:'Tarjeta <span>/ Mi tarjeta</span>',perfil:'Perfil <span>/ Mi cuenta</span>'};
+    const titles = {inicio:'Inicio <span>/ Dashboard</span>',bizum:'Bizum <span>/ Enviar</span>',transferencia:'Transferencia <span>/ Nueva</span>',historial:'Historial <span>/ Movimientos</span>',grafica:'Análisis <span>/ Gráfica</span>',tarjeta:'Tarjeta <span>/ Mi tarjeta</span>',perfil:'Perfil <span>/ Mi cuenta</span>',simulaciones:'Simulaciones <span>/ Ingresos y Gastos</span>'};
     document.getElementById('topbarTitle').innerHTML = titles[name] || name;
-    if (name === 'inicio')    loadDashboard();
-    if (name === 'historial') loadHistorial();
-    if (name === 'grafica')   loadGrafica();
-    if (name === 'tarjeta')   loadTarjeta();
-    if (name === 'perfil')    loadPerfil();
+    if (name === 'inicio')       loadDashboard();
+    if (name === 'historial')    loadHistorial();
+    if (name === 'grafica')      loadGrafica();
+    if (name === 'tarjeta')      loadTarjeta();
+    if (name === 'perfil')       loadPerfil();
+    if (name === 'simulaciones') loadSimulaciones();
     document.getElementById('sidebar').classList.remove('open');
 }
 
@@ -334,106 +335,64 @@ function copiarIban() {
     navigator.clipboard.writeText(iban).then(()=>showAlert('alertPerfil','IBAN copiado al portapapeles.','success'));
 }
 
-
+/* ═══════════════════════════════════════════
+   BIZUM
+═══════════════════════════════════════════ */
 function solicitarCodigoBizum() {
     const tel  = document.getElementById('bizumTel').value.trim();
     const imp  = document.getElementById('bizumImporte').value;
     const conc = document.getElementById('bizumConcepto').value.trim();
-
-    if (!tel || !imp || parseFloat(imp) <= 0) {
-        showAlert('alertBizum', 'Rellena el teléfono y el importe correctamente.', 'error');
-        return;
-    }
-
-    const btn = document.getElementById('btnEnviarBizum');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-eco"></span> Enviando...';
-
-    ajax({
-        accion: 'solicitarCodigoBizum',
-        telefono: tel,
-        importe: imp,
-        concepto: conc || 'Bizum'
-    }, r => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-lightning-charge-fill"></i> Enviar Bizum';
-
-        if (r.ok) {
-            showAlert('alertBizum', r.mensaje, 'success');
-            abrirModal('modalBizum');
-            limpiarCodeInputs('codeInputsBizum');
-        } else {
-            showAlert('alertBizum', r.mensaje, 'error');
-        }
+    if(!tel||!imp||parseFloat(imp)<=0){showAlert('alertBizum','Rellena el teléfono y el importe correctamente.','error');return;}
+    const btn=document.getElementById('btnEnviarBizum');
+    btn.disabled=true; btn.innerHTML='<span class="spinner-eco"></span> Enviando...';
+    ajax({accion:'solicitarCodigoBizum',telefono:tel,importe:imp,concepto:conc||'Bizum'}, r=>{
+        btn.disabled=false; btn.innerHTML='<i class="bi bi-lightning-charge-fill"></i> Enviar Bizum';
+        if(r.ok){showAlert('alertBizum',r.mensaje,'success'); abrirModal('modalBizum'); limpiarCodeInputs('codeInputsBizum');}
+        else showAlert('alertBizum',r.mensaje,'error');
     });
 }
 
 function confirmarBizum() {
     const codigo = getCodeValue('codeInputsBizum');
-
-    if (codigo.length !== 5) {
-        showAlert('alertCodBizum', 'Introduce los 5 dígitos del código.', 'error');
-        return;
-    }
-
-    const btn = document.getElementById('btnConfBizum');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-eco"></span>';
-
-    ajax({ accion: 'confirmarBizum', codigo }, r => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-check2-circle"></i> Confirmar';
-
-        if (r.ok) {
+    if(codigo.length!==5){showAlert('alertCodBizum','Introduce los 5 dígitos del código.','error');return;}
+    const btn=document.getElementById('btnConfBizum');
+    btn.disabled=true; btn.innerHTML='<span class="spinner-eco"></span>';
+    ajax({accion:'confirmarBizum',codigo}, r=>{
+        btn.disabled=false; btn.innerHTML='<i class="bi bi-check2-circle"></i> Confirmar';
+        if(r.ok){
             cerrarModal('modalBizum');
-            showAlert('alertBizum', r.mensaje, 'success');
-
-            document.getElementById('bizumTel').value = '';
-            document.getElementById('bizumImporte').value = '';
-            document.getElementById('bizumConcepto').value = '';
-
+            const pdfBtn = r.transaccion_id
+                ? `<br><a href="controllers/generarPDF.php?id=${r.transaccion_id}" target="_blank" class="eco-btn eco-btn-outline mt-2" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:1.5px solid var(--eco-primary);color:var(--eco-primary);text-decoration:none;background:transparent;margin-top:8px"><i class="bi bi-file-earmark-pdf-fill"></i> Descargar comprobante PDF</a>`
+                : '';
+            document.getElementById('alertBizum').innerHTML = `<div class="alert-eco alert-success"><i class="bi bi-check-circle-fill"></i> ${htmlE(r.mensaje)}${pdfBtn}</div>`;
+            document.getElementById('bizumTel').value='';
+            document.getElementById('bizumImporte').value='';
+            document.getElementById('bizumConcepto').value='';
             loadDashboard();
-            cargarUltimosBizum();
-
-        } else {
-            showAlert('alertCodBizum', r.mensaje, 'error');
-        }
+        } else showAlert('alertCodBizum',r.mensaje,'error');
     });
 }
 
-function cargarUltimosBizum() {
-    ajax({ accion: 'ultimosBizum' }, r => {
-        const cont = document.getElementById('bizumRecientes');
-
-        if (!cont) return;
-
-        if (!r.ok || !r.datos || !r.datos.length) {
-            cont.innerHTML = '<span class="text-muted">Sin contactos recientes</span>';
-            return;
-        }
-
-        cont.innerHTML = r.datos.map(x => `
-            <button
-                class="eco-btn eco-btn-outline"
-                onclick="seleccionarBizum('${x.telefono_destino}')">
-                ${htmlE(x.nombre_destino)}
-            </button>
-        `).join('');
-    });
-}
-
-function seleccionarBizum(telefono) {
-    document.getElementById('bizumTel').value = telefono;
-}
 /* ═══════════════════════════════════════════
    TRANSFERENCIA
 ═══════════════════════════════════════════ */
+function validarIBAN(iban) {
+    iban = iban.replace(/\s/g, '').toUpperCase();
+    if (!/^ES\d{22}$/.test(iban)) return false;
+    const reord = iban.slice(4) + iban.slice(0, 4);
+    const num = reord.split('').map(c => isNaN(c) ? c.charCodeAt(0) - 55 : c).join('');
+    let resto = 0;
+    for (const d of num) resto = (resto * 10 + parseInt(d)) % 97;
+    return resto === 1;
+}
+
 function solicitarCodigoTrans() {
     const iban  = document.getElementById('transIBAN').value.trim().replace(/\s/g,'');
     const tit   = document.getElementById('transTitular').value.trim();
     const imp   = document.getElementById('transImporte').value;
     const conc  = document.getElementById('transConcepto').value.trim();
     if(!iban||!tit||!imp||parseFloat(imp)<=0){showAlert('alertTrans','Rellena todos los campos obligatorios.','error');return;}
+    if(!validarIBAN(iban)){showAlert('alertTrans','El IBAN introducido no es válido.','error');return;}
     const btn=document.getElementById('btnEnviarTrans');
     btn.disabled=true; btn.innerHTML='<span class="spinner-eco"></span> Verificando...';
     ajax({accion:'solicitarCodigoTransferencia',iban_destino:iban,titular_destino:tit,importe:imp,concepto:conc||'Transferencia'}, r=>{
@@ -452,7 +411,11 @@ function confirmarTrans() {
         btn.disabled=false; btn.innerHTML='<i class="bi bi-check2-circle"></i> Confirmar';
         if(r.ok){
             cerrarModal('modalTrans');
-            showAlert('alertTrans',r.mensaje,'success');
+            // Mostrar alerta con botón descargar PDF
+            const pdfBtn = r.transaccion_id
+                ? `<br><a href="controllers/generarPDF.php?id=${r.transaccion_id}" target="_blank" class="eco-btn eco-btn-outline mt-2" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:1.5px solid var(--eco-primary);color:var(--eco-primary);text-decoration:none;background:transparent;margin-top:8px"><i class="bi bi-file-earmark-pdf-fill"></i> Descargar comprobante PDF</a>`
+                : '';
+            document.getElementById('alertTrans').innerHTML = `<div class="alert-eco alert-success"><i class="bi bi-check-circle-fill"></i> ${htmlE(r.mensaje)}${pdfBtn}</div>`;
             document.getElementById('transIBAN').value='';
             document.getElementById('transTitular').value='';
             document.getElementById('transImporte').value='';
@@ -550,17 +513,117 @@ function htmlE(str) {
 /* ═══════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', ()=>{
     loadDashboard();
-    cargarUltimosBizum();
+    ajax({accion:'getNotificaciones'}, r=>{
+        if(r.ok){ const n=r.no_leidas||0; const b=document.getElementById('notifBadge'); b.textContent=n; b.style.display=n>0?'flex':'none'; }
+    });
+});
+/* ═══════════════════════════════════════════
+   SIMULACIONES
+═══════════════════════════════════════════ */
 
-    ajax({ accion:'getNotificaciones' }, r => {
-        if (r.ok) {
-            const n = r.no_leidas || 0;
-            const b = document.getElementById('notifBadge');
+function loadSimulaciones() {
+    ajax({accion:'getSimulaciones'}, r=>{
+        if(!r.ok) return;
+        const gastos   = (r.simulaciones||[]).filter(s=>s.tipo==='gasto');
+        const ingresos = (r.simulaciones||[]).filter(s=>s.tipo==='ingreso');
+        renderSimLista('listaGastos', gastos, 'gasto');
+        renderSimLista('listaIngresos', ingresos, 'ingreso');
+    });
+}
 
-            b.textContent = n;
-            b.style.display = n > 0 ? 'flex' : 'none';
-        }
+function renderSimLista(containerId, lista, tipo) {
+    const el = document.getElementById(containerId);
+    if(!el) return;
+    if(!lista||!lista.length){ el.innerHTML=`<p style="font-size:13px;color:var(--eco-muted);text-align:center;padding:12px">Sin ${tipo==='gasto'?'gastos':'ingresos'} configurados</p>`; return; }
+    el.innerHTML = lista.map(s=>{
+        const imp = parseFloat(s.importe).toFixed(2).replace('.',',');
+        const dias = s.intervalo_dias===1?'cada día':`cada ${s.intervalo_dias} días`;
+        const prox = s.proxima_ejecucion ? new Date(s.proxima_ejecucion).toLocaleDateString('es-ES') : '-';
+        const activeIcon = s.activa=='1' ? '<i class="bi bi-pause-fill"></i>' : '<i class="bi bi-play-fill"></i>';
+        const color = tipo==='gasto'?'#e63946':'#2d6a4f';
+        return `<div class="sim-item ${s.activa=='1'?'':'inactiva'}" id="sim-${s.id}">
+            <div class="sim-item-info">
+                <div class="sim-item-nombre">${htmlE(s.nombre)}</div>
+                <div class="sim-item-detalle">${dias} · Próx: ${prox}</div>
+            </div>
+            <span class="sim-item-importe ${tipo}" style="color:${color}">${tipo==='gasto'?'-':'+'} €${imp}</span>
+            <div class="sim-actions">
+                <button class="sim-btn" title="${s.activa=='1'?'Pausar':'Reanudar'}" onclick="toggleSim(${s.id})">${activeIcon}</button>
+                <button class="sim-btn danger" title="Eliminar" onclick="eliminarSim(${s.id})"><i class="bi bi-trash3"></i></button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function quickGasto(nombre, importe, intervalo) {
+    ajax({accion:'crearSimulacion', nombre, tipo:'gasto', importe, intervalo_dias:intervalo}, r=>{
+        if(r.ok) { loadSimulaciones(); showSimAlert('Simulación "'+nombre+'" añadida.','success'); }
+        else showSimAlert(r.mensaje||'Error','error');
+    });
+}
+
+function crearNomina() {
+    const imp = parseFloat(document.getElementById('nominaImporte').value)||0;
+    if(imp<=0){ showSimAlert('Introduce un importe válido para la nómina.','error'); return; }
+    ajax({accion:'crearSimulacion', nombre:'Nómina', tipo:'ingreso', importe:imp, intervalo_dias:2}, r=>{
+        if(r.ok){ document.getElementById('nominaImporte').value=''; loadSimulaciones(); showSimAlert('Nómina configurada. Se ingresará cada 2 días.','success'); }
+        else showSimAlert(r.mensaje||'Error','error');
+    });
+}
+
+function crearSimulacion(tipo) {
+    const nombre  = tipo==='gasto' ? document.getElementById('gastoNombre').value.trim()  : document.getElementById('ingresoNombre').value.trim();
+    const importe = tipo==='gasto' ? parseFloat(document.getElementById('gastoImporte').value)||0 : parseFloat(document.getElementById('ingresoImporte').value)||0;
+    const intervalo = tipo==='gasto' ? parseInt(document.getElementById('gastoIntervalo').value)||1 : parseInt(document.getElementById('ingresoIntervalo').value)||1;
+    if(!nombre||importe<=0){ showSimAlert('Rellena nombre e importe.','error'); return; }
+    ajax({accion:'crearSimulacion', nombre, tipo, importe, intervalo_dias:intervalo}, r=>{
+        if(r.ok){
+            if(tipo==='gasto'){document.getElementById('gastoNombre').value='';document.getElementById('gastoImporte').value='';}
+            else{document.getElementById('ingresoNombre').value='';document.getElementById('ingresoImporte').value='';}
+            loadSimulaciones(); showSimAlert('Simulación añadida correctamente.','success');
+        } else showSimAlert(r.mensaje||'Error','error');
+    });
+}
+
+function eliminarSim(id) {
+    ajax({accion:'eliminarSimulacion', id}, r=>{ if(r.ok) loadSimulaciones(); });
+}
+
+function toggleSim(id) {
+    ajax({accion:'toggleSimulacion', id}, r=>{ if(r.ok) loadSimulaciones(); });
+}
+
+function procesarSimulaciones() {
+    const btn = document.querySelector('[onclick="procesarSimulaciones()"]');
+    if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner-eco"></span> Procesando...'; }
+    ajax({accion:'procesarSimulaciones'}, r=>{
+        if(btn){ btn.disabled=false; btn.innerHTML='<i class="bi bi-play-circle-fill"></i> Procesar simulaciones pendientes'; }
+        if(r.ok){
+            const msg = r.procesadas>0
+                ? `${r.procesadas} simulación(es) procesada(s). Nuevo saldo: €${parseFloat(r.nuevo_saldo).toFixed(2).replace('.',',')}`
+                : 'No hay simulaciones pendientes de ejecutar.';
+            showSimAlert(msg, r.procesadas>0?'success':'info');
+            loadSimulaciones(); loadDashboard();
+        } else showSimAlert(r.mensaje||'Error al procesar.','error');
+    });
+}
+
+function showSimAlert(msg, type) {
+    const el = document.getElementById('alertSim');
+    if(!el) return;
+    const colors={success:'#d8f3dc',error:'#fde8ea',info:'#e8f4fd'};
+    const textColors={success:'#1a3a2a',error:'#7f1d1d',info:'#1a3a7f'};
+    el.innerHTML=`<div style="padding:12px 16px;border-radius:10px;font-size:13px;background:${colors[type]||colors.info};color:${textColors[type]||textColors.info}">${htmlE(msg)}</div>`;
+    setTimeout(()=>{ if(el) el.innerHTML=''; }, 5000);
+}
+
+// Hook into section loading to load simulaciones when opened
+const _origShowSection = typeof showSection==='function' ? showSection : null;
+document.addEventListener('DOMContentLoaded', ()=>{
+    // Auto-load simulaciones when section is visible
+    document.querySelectorAll('[onclick*="simulaciones"]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{ setTimeout(loadSimulaciones, 200); });
     });
 });

@@ -270,3 +270,24 @@ ALTER TABLE `transferencias`
   ADD CONSTRAINT `fk_transfer_transaccion` FOREIGN KEY (`transaccion_id`) REFERENCES `transacciones` (`id`) ON DELETE CASCADE;
 
 COMMIT;
+
+-- --------------------------------------------------------
+-- Tabla: simulaciones (ingresos y gastos periódicos)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `simulaciones` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `tipo` enum('gasto','ingreso') NOT NULL,
+  `importe` decimal(15,2) NOT NULL,
+  `intervalo_dias` int(11) NOT NULL DEFAULT 1,
+  `activa` tinyint(1) NOT NULL DEFAULT 1,
+  `ultima_ejecucion` timestamp NULL DEFAULT NULL,
+  `proxima_ejecucion` timestamp NOT NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `fk_sim_usuario` (`usuario_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `simulaciones`
+  ADD CONSTRAINT `fk_sim_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;

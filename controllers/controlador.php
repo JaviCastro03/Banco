@@ -163,6 +163,7 @@ if (isset($_POST["ajax"])) {
         if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false,"mensaje"=>"Sesión no válida."]); exit; }
         $iban=$_POST["iban_destino"]??""; $titular=$_POST["titular_destino"]??""; $importe=floatval($_POST["importe"]??0); $concepto=$_POST["concepto"]??"Transferencia";
         if (!$iban||$importe<=0||!$titular) { echo json_encode(["ok"=>false,"mensaje"=>"Datos inválidos."]); exit; }
+        if (!UsuarioDDBB::validarIBAN($iban)) { echo json_encode(["ok"=>false,"mensaje"=>"El IBAN introducido no es válido."]); exit; }
         $codigo=$conexion->generarCodigoVerificacion($_SESSION["idU"]);
         $importeF=number_format($importe,2,',','.');
         enviarCorreoGmail($_SESSION["email"],"Código Transferencia - EcoBank","<div style='font-family:sans-serif;padding:20px'><h2 style='color:#1a3a2a'>Código de Verificación Transferencia</h2><p>Transferencia de <b>€$importeF</b> a <b>$titular</b> (IBAN: $iban)</p><div style='font-size:36px;font-weight:bold;letter-spacing:10px;color:#2d6a4f;text-align:center;padding:24px;background:#f0f7f4;border-radius:8px;margin:16px 0'>$codigo</div><p style='color:#888;font-size:12px'>Válido 10 minutos.</p></div>");
@@ -174,11 +175,45 @@ if (isset($_POST["ajax"])) {
         if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false,"mensaje"=>"Sesión no válida."]); exit; }
         if (!$conexion->verificarCodigo($_SESSION["idU"],trim($_POST["codigo"]??""))) { echo json_encode(["ok"=>false,"mensaje"=>"Código incorrecto o caducado."]); exit; }
         $r=$conexion->enviarTransferencia($_SESSION["idU"],$_SESSION["iban_trans"],$_SESSION["titular_trans"],$_SESSION["importe_trans"],$_SESSION["concepto_trans"]);
+        $transaccion_id = $r["transaccion_id"] ?? null;
         unset($_SESSION["iban_trans"],$_SESSION["titular_trans"],$_SESSION["importe_trans"],$_SESSION["concepto_trans"]);
         echo json_encode($r); exit;
     }
 
-    echo json_encode(["ok"=>false,"mensaje"=>"Acción no reconocida."]); exit;
+    // SIMULACIONES
+    if ($accion === "getSimulaciones") {
+        if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
+        echo json_encode(["ok"=>true,"simulaciones"=>$conexion->getSimulaciones($_SESSION["idU"])]); exit;
+    }
+
+    if ($accion === "crearSimulacion") {
+        if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
+        $nombre = trim($_POST["nombre"] ?? "");
+        $tipo = $_POST["tipo"] ?? "gasto";
+        $importe = floatval($_POST["importe"] ?? 0);
+        $intervalo = intval($_POST["intervalo_dias"] ?? 1);
+        if (!$nombre || $intervalo < 1) { echo json_encode(["ok"=>false,"mensaje"=>"Datos inválidos."]); exit; }
+        $id = $conexion->crearSimulacion($_SESSION["idU"], $nombre, $tipo, $importe, $intervalo);
+        echo json_encode(["ok"=>true,"id"=>$id,"mensaje"=>"Simulación creada."]); exit;
+    }
+
+    if ($accion === "eliminarSimulacion") {
+        if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
+        $ok = $conexion->eliminarSimulacion(intval($_POST["id"]??0), $_SESSION["idU"]);
+        echo json_encode(["ok"=>$ok]); exit;
+    }
+
+    if ($accion === "toggleSimulacion") {
+        if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
+        $ok = $conexion->toggleSimulacion(intval($_POST["id"]??0), $_SESSION["idU"]);
+        echo json_encode(["ok"=>$ok]); exit;
+    }
+
+    if ($accion === "procesarSimulaciones") {
+        if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
+        $r = $conexion->procesarSimulaciones($_SESSION["idU"]);
+        echo json_encode($r); exit;
+    }
 }
 
 /* ======================================================
@@ -192,42 +227,13 @@ if (isset($_POST["bizum"]))     $_SESSION["ruta"] = "bizumUsuario";
 
 if ($_SESSION["ruta"] === "login") {
     if (isset($_POST["iniciarSesion"])) {
-
-        if (!$conexion->emailExiste($_POST["email"])) {
-            $_SESSION["mensaje"] = "Credenciales incorrectas";
-            header("Location: index.php");
-            exit;
-        }
-
-        if (!password_verify($_POST["password"], $conexion->getPasswordHash($_POST["email"]))) {
-            $_SESSION["mensaje"] = "Credenciales incorrectas";
-            header("Location: index.php");
-            exit;
-        }
-
+        if (!$conexion->emailExiste($_POST["email"])) { $_SESSION["mensaje"]="Credenciales incorrectas"; header("Location: index.php"); exit; }
+        if (!password_verify($_POST["password"], $conexion->getPasswordHash($_POST["email"]))) { $_SESSION["mensaje"]="Credenciales incorrectas"; header("Location: index.php"); exit; }
         $rol = $conexion->getRol($_POST["email"]);
-
-        if ($rol == 0) {
-            $_SESSION["mensaje"] = "Debes verificar tu correo";
-            header("Location: index.php");
-            exit;
-        }
-
-        $_SESSION["idU"] = $conexion->getIdUsuario($_POST["email"]);
-        $_SESSION["nombre"] = $conexion->getNombreUsuario($_POST["email"]);
-        $_SESSION["email"] = $_POST["email"];
-        $_SESSION["rol"] = $rol;
-
-        $conexion->crearNotificacion(
-            $_SESSION["idU"],
-            "Login",
-            "Has iniciado sesión correctamente"
-        );
-
-        $_SESSION["ruta"] = ($rol == 2) ? "admin" : "dashboard";
-
-        header("Location: index.php");
-        exit;
+        if ($rol == 0) { $_SESSION["mensaje"]="Debes verificar tu correo"; header("Location: index.php"); exit; }
+        $_SESSION["idU"]=$conexion->getIdUsuario($_POST["email"]); $_SESSION["nombre"]=$conexion->getNombreUsuario($_POST["email"]); $_SESSION["email"]=$_POST["email"]; $_SESSION["rol"]=$rol;
+        $_SESSION["ruta"]=($rol==2)?"admin":"dashboard";
+        header("Location: index.php"); exit;
     }
     require_once "./views/vistaLogin.php";
 }
@@ -247,8 +253,15 @@ if ($_SESSION["ruta"] === "registro") {
         if ($conexion->emailExiste($_POST["email"])) { $_SESSION["mensaje"]="El correo ya existe"; header("Location: index.php"); exit; }
         if (!UsuarioDDBB::comprobarPassword($_POST["password"],$_POST["cpassword"])) { $_SESSION["mensaje"]="Las contraseñas no coinciden"; header("Location: index.php"); exit; }
         if ($conexion->dniExiste($_POST["dni"])) { $_SESSION["mensaje"]="El DNI ya está registrado"; header("Location: index.php"); exit; }
+        // Verificar que el usuario tenga al menos 18 años
+        $fechaNac = $_POST["fecha_nacimiento"] ?? null;
+        if (!$fechaNac) { $_SESSION["mensaje"]="La fecha de nacimiento es obligatoria"; header("Location: index.php"); exit; }
+        $hoy = new DateTime();
+        $nacimiento = new DateTime($fechaNac);
+        $edad = $hoy->diff($nacimiento)->y;
+        if ($edad < 18) { $_SESSION["mensaje"]="Debes tener al menos 18 años para crear una cuenta"; header("Location: index.php"); exit; }
         if ($conexion->insertarUsuario($_POST["dni"],$_POST["nombre"],$_POST["apellidos"],$_POST["email"],$_POST["telefono"]??'',$_POST["password"],$_POST["fecha_nacimiento"]??null,$_POST["provincia"],$_POST["municipio"],$_POST["via"],$_POST["numero_piso"])) {
-            $msg="<div style='font-family:sans-serif;padding:20px'><h2 style='color:#1a3a2a'>Verifica tu cuenta EcoBank</h2><p>Hola <b>".$_POST["nombre"]."</b>, pulsa para activar tu cuenta:</p><a href='http://localhost/banco/banco/controllers/verificar/verificar.php?email=".urlencode($_POST["email"])."' style='display:inline-block;padding:12px 24px;background:#2d6a4f;color:white;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:12px'>Verificar cuenta</a></div>";
+            $msg="<div style='font-family:sans-serif;padding:20px'><h2 style='color:#1a3a2a'>Verifica tu cuenta EcoBank</h2><p>Hola <b>".$_POST["nombre"]."</b>, pulsa para activar tu cuenta:</p><a href='http://localhost/banco/controllers/verificar/verificar.php?email=".urlencode($_POST["email"])."' style='display:inline-block;padding:12px 24px;background:#2d6a4f;color:white;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:12px'>Verificar cuenta</a></div>";
             $_SESSION["mensaje"] = enviarCorreoGmail($_POST["email"],"Verifica tu cuenta EcoBank",$msg) ? "Revisa tu correo para activar la cuenta" : "No se pudo enviar el correo";
         } else { $_SESSION["mensaje"]="Error al registrar usuario"; }
         header("Location: index.php"); exit;
@@ -258,7 +271,7 @@ if ($_SESSION["ruta"] === "registro") {
 
 function enviarCorreoGmail($email,$asunto,$mensaje) {
     try {
-        require './models/vendor_old/autoload.php';
+        require './models/vendor/autoload.php';
         $mail=new PHPMailer(true); $mail->isSMTP(); $mail->Host='smtp.gmail.com'; $mail->SMTPAuth=true;
         $mail->Username='jcastro2gs@gmail.com'; $mail->Password='REMOVED';
         $mail->SMTPSecure=PHPMailer::ENCRYPTION_STARTTLS; $mail->Port=587;

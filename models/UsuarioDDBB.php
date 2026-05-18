@@ -256,7 +256,7 @@ class UsuarioDDBB {
                 $intervalo = '5 YEAR';
                 $label    = 'año';
                 break;
-            default: // meses
+            default:
                 $formato  = '%Y-%m';
                 $intervalo = '6 MONTH';
                 $label    = 'mes';
@@ -351,125 +351,42 @@ class UsuarioDDBB {
     public function enviarBizum($usuario_id, $telefono_destino, $importe, $concepto = "Bizum") {
         try {
             $this->conexion->beginTransaction();
-
-            if ($importe <= 0) {
-                throw new Exception("El importe debe ser mayor que cero.");
-            }
+            if ($importe <= 0) throw new Exception("El importe debe ser mayor que cero.");
 
             $stmt = $this->conexion->prepare("SELECT id, saldo FROM cuentas WHERE usuario_id = ?");
             $stmt->execute([$usuario_id]);
             $cuentaOrigen = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$cuentaOrigen) {
-                throw new Exception("El usuario no tiene cuenta bancaria.");
-            }
-
-            if ($cuentaOrigen['saldo'] < $importe) {
-                throw new Exception("Saldo insuficiente.");
-            }
+            if (!$cuentaOrigen) throw new Exception("El usuario no tiene cuenta bancaria.");
+            if ($cuentaOrigen['saldo'] < $importe) throw new Exception("Saldo insuficiente.");
 
             $stmt = $this->conexion->prepare("SELECT id, nombre, apellidos FROM usuarios WHERE telefono = ?");
             $stmt->execute([$telefono_destino]);
             $destinatario = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$destinatario) {
-                throw new Exception("El teléfono no está registrado en EcoBank.");
-            }
-
-            if ($destinatario['id'] == $usuario_id) {
-                throw new Exception("No puedes enviarte un Bizum a ti mismo.");
-            }
+            if (!$destinatario) throw new Exception("El teléfono no está registrado en EcoBank.");
+            if ($destinatario['id'] == $usuario_id) throw new Exception("No puedes enviarte un Bizum a ti mismo.");
 
             $stmt = $this->conexion->prepare("SELECT id FROM cuentas WHERE usuario_id = ?");
             $stmt->execute([$destinatario['id']]);
             $cuentaDestino = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$cuentaDestino) throw new Exception("El destinatario no tiene cuenta bancaria.");
 
-            if (!$cuentaDestino) {
-                throw new Exception("El destinatario no tiene cuenta bancaria.");
-            }
+            $this->conexion->prepare("UPDATE cuentas SET saldo = saldo - ? WHERE id = ?")->execute([$importe, $cuentaOrigen['id']]);
+            $this->conexion->prepare("UPDATE cuentas SET saldo = saldo + ? WHERE id = ?")->execute([$importe, $cuentaDestino['id']]);
 
-            // Actualizar saldos
-            $this->conexion->prepare("UPDATE cuentas SET saldo = saldo - ? WHERE id = ?")
-                ->execute([$importe, $cuentaOrigen['id']]);
-
-            $this->conexion->prepare("UPDATE cuentas SET saldo = saldo + ? WHERE id = ?")
-                ->execute([$importe, $cuentaDestino['id']]);
-
-            // Crear transacción
             $referencia = uniqid("BIZUM_");
-
-            $stmt = $this->conexion->prepare("
-            INSERT INTO transacciones (
-                cuenta_origen_id,
-                cuenta_destino_id,
-                importe,
-                tipo,
-                estado,
-                concepto,
-                referencia,
-                ip_origen
-            ) VALUES (?, ?, ?, 'bizum', 'completada', ?, ?, ?)
-        ");
-
-            $stmt->execute([
-                $cuentaOrigen['id'],
-                $cuentaDestino['id'],
-                $importe,
-                $concepto,
-                $referencia,
-                $_SERVER['REMOTE_ADDR'] ?? null
-            ]);
-
+            $stmt = $this->conexion->prepare("INSERT INTO transacciones (cuenta_origen_id, cuenta_destino_id, importe, tipo, estado, concepto, referencia, ip_origen) VALUES (?, ?, ?, 'bizum', 'completada', ?, ?, ?)");
+            $stmt->execute([$cuentaOrigen['id'], $cuentaDestino['id'], $importe, $concepto, $referencia, $_SERVER['REMOTE_ADDR'] ?? null]);
             $transaccion_id = $this->conexion->lastInsertId();
 
-            // Guardar info Bizum
             $nombreDestino = trim($destinatario['nombre']) . " " . trim($destinatario['apellidos']);
-
-            $stmt = $this->conexion->prepare("
-            INSERT INTO bizum (
-                transaccion_id,
-                telefono_destino,
-                nombre_destino,
-                mensaje
-            ) VALUES (?, ?, ?, ?)
-        ");
-
-            $stmt->execute([
-                $transaccion_id,
-                $telefono_destino,
-                $nombreDestino,
-                $concepto
-            ]);
-
-            // NOTIFICACIÓN EMISOR
-            $this->crearNotificacion(
-                $usuario_id,
-                'Bizum',
-                "Has enviado un Bizum de €$importe"
-            );
-
-            // NOTIFICACIÓN DESTINATARIO
-            $this->crearNotificacion(
-                $destinatario['id'],
-                'Bizum recibido',
-                "Has recibido un Bizum de €$importe"
-            );
+            $stmt = $this->conexion->prepare("INSERT INTO bizum (transaccion_id, telefono_destino, nombre_destino, mensaje) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$transaccion_id, $telefono_destino, $nombreDestino, $concepto]);
 
             $this->conexion->commit();
-
-            return [
-                "ok" => true,
-                "mensaje" => "Bizum enviado correctamente a $nombreDestino.",
-                "referencia" => $referencia
-            ];
-
+            return ["ok" => true, "mensaje" => "Bizum enviado correctamente a $nombreDestino.", "referencia" => $referencia, "transaccion_id" => $transaccion_id];
         } catch (Exception $e) {
             $this->conexion->rollBack();
-
-            return [
-                "ok" => false,
-                "mensaje" => $e->getMessage()
-            ];
+            return ["ok" => false, "mensaje" => $e->getMessage()];
         }
     }
 
@@ -477,136 +394,56 @@ class UsuarioDDBB {
                         TRANSFERENCIAS
     ====================================================== */
 
+    public static function validarIBAN($iban) {
+        $iban = strtoupper(str_replace(' ', '', $iban));
+        if (strlen($iban) !== 24) return false;
+        $reordenado = substr($iban, 4) . substr($iban, 0, 4);
+        $numerico = '';
+        foreach (str_split($reordenado) as $c) {
+            $numerico .= ctype_alpha($c) ? (ord($c) - 55) : $c;
+        }
+        return bcmod($numerico, '97') === '1';
+    }
+
     public function enviarTransferencia($usuario_id, $iban_destino, $titular_destino, $importe, $concepto = "Transferencia") {
         try {
             $this->conexion->beginTransaction();
+            if ($importe <= 0) throw new Exception("El importe debe ser mayor que cero.");
 
-            if ($importe <= 0) {
-                throw new Exception("El importe debe ser mayor que cero.");
-            }
-
-            $stmt = $this->conexion->prepare("
-            SELECT id, saldo 
-            FROM cuentas 
-            WHERE usuario_id = ?
-        ");
+            $stmt = $this->conexion->prepare("SELECT id, saldo FROM cuentas WHERE usuario_id = ?");
             $stmt->execute([$usuario_id]);
             $cuentaOrigen = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$cuentaOrigen) throw new Exception("No tienes cuenta bancaria.");
+            if ($cuentaOrigen['saldo'] < $importe) throw new Exception("Saldo insuficiente.");
+            if (trim($iban_destino) === '') throw new Exception("El IBAN destino no puede estar vacío.");
 
-            if (!$cuentaOrigen) {
-                throw new Exception("No tienes cuenta bancaria.");
-            }
-
-            if ($cuentaOrigen['saldo'] < $importe) {
-                throw new Exception("Saldo insuficiente.");
-            }
-
-            if (trim($iban_destino) === '') {
-                throw new Exception("El IBAN destino no puede estar vacío.");
-            }
-
-            $stmt = $this->conexion->prepare("
-            SELECT id, usuario_id 
-            FROM cuentas 
-            WHERE iban = ?
-        ");
+            $stmt = $this->conexion->prepare("SELECT id FROM cuentas WHERE iban = ?");
             $stmt->execute([$iban_destino]);
             $cuentaDestino = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Restar saldo origen
-            $stmt = $this->conexion->prepare("
-            UPDATE cuentas 
-            SET saldo = saldo - ? 
-            WHERE id = ?
-        ");
-            $stmt->execute([$importe, $cuentaOrigen['id']]);
+            // No puedes transferirte a tu propia cuenta
+            if ($cuentaDestino && $cuentaDestino['id'] == $cuentaOrigen['id']) {
+                throw new Exception("No puedes realizar una transferencia a tu propia cuenta.");
+            }
 
-            // Si existe destino interno, sumar saldo
+            $this->conexion->prepare("UPDATE cuentas SET saldo = saldo - ? WHERE id = ?")->execute([$importe, $cuentaOrigen['id']]);
             if ($cuentaDestino) {
-                $stmt = $this->conexion->prepare("
-                UPDATE cuentas 
-                SET saldo = saldo + ? 
-                WHERE id = ?
-            ");
-                $stmt->execute([$importe, $cuentaDestino['id']]);
+                $this->conexion->prepare("UPDATE cuentas SET saldo = saldo + ? WHERE id = ?")->execute([$importe, $cuentaDestino['id']]);
             }
 
             $referencia = uniqid("TRANS_");
-
-            // Registrar transacción
-            $stmt = $this->conexion->prepare("
-            INSERT INTO transacciones (
-                cuenta_origen_id,
-                cuenta_destino_id,
-                importe,
-                tipo,
-                estado,
-                concepto,
-                referencia,
-                ip_origen
-            ) VALUES (?, ?, ?, 'transferencia', 'completada', ?, ?, ?)
-        ");
-
-            $stmt->execute([
-                $cuentaOrigen['id'],
-                $cuentaDestino['id'] ?? null,
-                $importe,
-                $concepto,
-                $referencia,
-                $_SERVER['REMOTE_ADDR'] ?? null
-            ]);
-
+            $stmt = $this->conexion->prepare("INSERT INTO transacciones (cuenta_origen_id, cuenta_destino_id, importe, tipo, estado, concepto, referencia, ip_origen) VALUES (?, ?, ?, 'transferencia', 'completada', ?, ?, ?)");
+            $stmt->execute([$cuentaOrigen['id'], $cuentaDestino['id'] ?? null, $importe, $concepto, $referencia, $_SERVER['REMOTE_ADDR'] ?? null]);
             $transaccion_id = $this->conexion->lastInsertId();
 
-            // Guardar datos extra transferencia
-            $stmt = $this->conexion->prepare("
-            INSERT INTO transferencias (
-                transaccion_id,
-                iban_destino,
-                titular_destino,
-                concepto,
-                requiere_verificacion
-            ) VALUES (?, ?, ?, ?, 1)
-        ");
-
-            $stmt->execute([
-                $transaccion_id,
-                $iban_destino,
-                $titular_destino,
-                $concepto
-            ]);
-
-            // NOTIFICACIÓN EMISOR
-            $this->crearNotificacion(
-                $usuario_id,
-                'Transferencia',
-                "Has enviado una transferencia de €$importe"
-            );
-
-            // NOTIFICACIÓN DESTINATARIO
-            if ($cuentaDestino && !empty($cuentaDestino['usuario_id'])) {
-                $this->crearNotificacion(
-                    $cuentaDestino['usuario_id'],
-                    'Transferencia recibida',
-                    "Has recibido una transferencia de €$importe"
-                );
-            }
+            $stmt = $this->conexion->prepare("INSERT INTO transferencias (transaccion_id, iban_destino, titular_destino, concepto, requiere_verificacion) VALUES (?, ?, ?, ?, 1)");
+            $stmt->execute([$transaccion_id, $iban_destino, $titular_destino, $concepto]);
 
             $this->conexion->commit();
-
-            return [
-                "ok" => true,
-                "mensaje" => "Transferencia realizada correctamente.",
-                "referencia" => $referencia
-            ];
-
+            return ["ok" => true, "mensaje" => "Transferencia realizada correctamente.", "referencia" => $referencia, "transaccion_id" => $transaccion_id];
         } catch (Exception $e) {
             $this->conexion->rollBack();
-
-            return [
-                "ok" => false,
-                "mensaje" => $e->getMessage()
-            ];
+            return ["ok" => false, "mensaje" => $e->getMessage()];
         }
     }
 
@@ -665,15 +502,23 @@ class UsuarioDDBB {
 
     private function generarIBAN() {
         do {
-            $iban = 'ES' . random_int(10, 99) .
-                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT) .
-                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT) .
-                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT) .
-                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT) .
-                str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+            // 20 dígitos del BBAN: 8 banco/sucursal + 2 control cuenta + 10 número cuenta
+            $bban = str_pad(random_int(0, 99999999), 8, '0', STR_PAD_LEFT)
+                . str_pad(random_int(0, 99), 2, '0', STR_PAD_LEFT)
+                . str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT)
+                . str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+
+            // Calcula dígitos de control: E=14, S=28, dígitos provisionales=00
+            $reordenado = $bban . '142800';
+            $resto = bcmod($reordenado, '97');
+            $control = str_pad(98 - intval($resto), 2, '0', STR_PAD_LEFT);
+
+            $iban = 'ES' . $control . $bban;
+
             $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM cuentas WHERE iban = ?");
             $stmt->execute([$iban]);
         } while ($stmt->fetchColumn() > 0);
+
         return $iban;
     }
 
@@ -694,7 +539,7 @@ class UsuarioDDBB {
         );
         $ultimos_usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return compact('total_usuarios', 'usuarios_verificados', 'total_cuentas',
-                       'total_transacciones', 'trans_este_mes', 'ultimos_usuarios');
+            'total_transacciones', 'trans_este_mes', 'ultimos_usuarios');
     }
 
     public function getCuentaUsuario($usuario_id) {
@@ -728,25 +573,148 @@ class UsuarioDDBB {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /* ======================================================
+                    PDF - TRANSACCIÓN
+    ====================================================== */
+
+    public function getTransaccionParaPDF($transaccion_id, $usuario_id) {
+        $sql = "SELECT
+                    t.id, t.tipo, t.importe, t.estado, t.concepto, t.referencia, t.fecha,
+                    CONCAT(u.nombre,' ',u.apellidos) as titular_origen,
+                    co.iban as iban_origen,
+                    CASE WHEN t.tipo='bizum' THEN b.nombre_destino
+                         WHEN t.tipo='transferencia' THEN tf.titular_destino ELSE '-' END as destinatario,
+                    CASE WHEN t.tipo='bizum' THEN b.telefono_destino
+                         WHEN t.tipo='transferencia' THEN tf.iban_destino ELSE '-' END as destino_ref
+                FROM transacciones t
+                JOIN cuentas co ON co.id = t.cuenta_origen_id
+                JOIN usuarios u ON u.id = co.usuario_id
+                LEFT JOIN bizum b ON b.transaccion_id = t.id
+                LEFT JOIN transferencias tf ON tf.transaccion_id = t.id
+                WHERE t.id = ? AND co.usuario_id = ?
+                LIMIT 1";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$transaccion_id, $usuario_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /* ======================================================
+                    SIMULACIONES
+    ====================================================== */
+
+    public function getSimulaciones($usuario_id) {
+        $sql = "SELECT * FROM simulaciones WHERE usuario_id = ? ORDER BY created_at DESC";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function crearSimulacion($usuario_id, $nombre, $tipo, $importe, $intervalo_dias) {
+        // Si importe es 0 o negativo (luz, agua), asignar random entre 20 y 100
+        if ($importe <= 0) {
+            $importe = mt_rand(20, 100);
+        }
+        // La primera ejecución es inmediata (ahora) para que se pueda procesar enseguida
+        $proxima = date('Y-m-d H:i:s');
+        $sql = "INSERT INTO simulaciones (usuario_id, nombre, tipo, importe, intervalo_dias, activa, proxima_ejecucion)
+                VALUES (?, ?, ?, ?, ?, 1, ?)";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id, $nombre, $tipo, $importe, $intervalo_dias, $proxima]);
+        return $this->conexion->lastInsertId();
+    }
+
+    public function eliminarSimulacion($id, $usuario_id) {
+        $stmt = $this->conexion->prepare("DELETE FROM simulaciones WHERE id = ? AND usuario_id = ?");
+        return $stmt->execute([$id, $usuario_id]);
+    }
+
+    public function toggleSimulacion($id, $usuario_id) {
+        $stmt = $this->conexion->prepare("UPDATE simulaciones SET activa = NOT activa WHERE id = ? AND usuario_id = ?");
+        return $stmt->execute([$id, $usuario_id]);
+    }
+
+    public function procesarSimulaciones($usuario_id) {
+        $stmt = $this->conexion->prepare(
+            "SELECT * FROM simulaciones WHERE usuario_id = ? AND activa = 1 AND proxima_ejecucion <= NOW()"
+        );
+        $stmt->execute([$usuario_id]);
+        $pendientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $cuenta = $this->conexion->prepare("SELECT id, saldo FROM cuentas WHERE usuario_id = ? AND activa = 1");
+        $cuenta->execute([$usuario_id]);
+        $cuentaData = $cuenta->fetch(PDO::FETCH_ASSOC);
+        if (!$cuentaData) return ['ok' => false, 'mensaje' => 'Sin cuenta bancaria.'];
+
+        $procesadas = 0;
+        foreach ($pendientes as $sim) {
+            // Para luz y agua, importe random cada vez que se ejecuta
+            $importe = $sim['importe'];
+            $nombresRandom = ['Luz', 'Agua'];
+            if (in_array($sim['nombre'], $nombresRandom)) {
+                $importe = mt_rand(20, 100);
+                // Actualizar el importe guardado con el nuevo random
+                $this->conexion->prepare("UPDATE simulaciones SET importe = ? WHERE id = ?")
+                    ->execute([$importe, $sim['id']]);
+            }
+
+            if ($sim['tipo'] === 'gasto') {
+                // Verificar saldo suficiente
+                if ($cuentaData['saldo'] < $importe) continue;
+
+                $this->conexion->prepare("UPDATE cuentas SET saldo = saldo - ? WHERE id = ?")
+                    ->execute([$importe, $cuentaData['id']]);
+                $cuentaData['saldo'] -= $importe;
+
+                // Transacción: origen = cuenta del usuario, destino = NULL
+                $referencia = uniqid("SIM_GASTO_");
+                $this->conexion->prepare(
+                    "INSERT INTO transacciones (cuenta_origen_id, cuenta_destino_id, importe, tipo, estado, concepto, referencia)
+                     VALUES (?, NULL, ?, 'transferencia', 'completada', ?, ?)"
+                )->execute([$cuentaData['id'], $importe, "Simulación gasto: " . $sim['nombre'], $referencia]);
+
+            } else {
+                // Ingreso: dinero entra en la cuenta
+                $this->conexion->prepare("UPDATE cuentas SET saldo = saldo + ? WHERE id = ?")
+                    ->execute([$importe, $cuentaData['id']]);
+                $cuentaData['saldo'] += $importe;
+
+                // Transacción: origen = destino = cuenta del usuario (ingreso simulado)
+                $referencia = uniqid("SIM_INGRESO_");
+                $this->conexion->prepare(
+                    "INSERT INTO transacciones (cuenta_origen_id, cuenta_destino_id, importe, tipo, estado, concepto, referencia)
+     VALUES (NULL, ?, ?, 'transferencia', 'completada', ?, ?)"
+                )->execute([$cuentaData['id'], $importe, "Simulación ingreso: " . $sim['nombre'], $referencia]);
+            }
+
+            // Notificación
+            $signo = $sim['tipo'] === 'gasto' ? '-' : '+';
+            $importeF = number_format($importe, 2, ',', '.');
+            $this->conexion->prepare(
+                "INSERT INTO notificaciones (usuario_id, tipo, contenido) VALUES (?, 'info', ?)"
+            )->execute([$usuario_id, "Simulación {$sim['nombre']}: {$signo}€{$importeF}"]);
+
+            // Calcular próxima ejecución
+            $proxima = date('Y-m-d H:i:s', strtotime("+" . $sim['intervalo_dias'] . " days"));
+            $this->conexion->prepare(
+                "UPDATE simulaciones SET ultima_ejecucion = NOW(), proxima_ejecucion = ? WHERE id = ?"
+            )->execute([$proxima, $sim['id']]);
+
+            $procesadas++;
+        }
+
+        $saldoActual = $this->conexion->prepare("SELECT saldo FROM cuentas WHERE id = ?");
+        $saldoActual->execute([$cuentaData['id']]);
+        $nuevoSaldo = $saldoActual->fetchColumn();
+
+        return ['ok' => true, 'procesadas' => $procesadas, 'nuevo_saldo' => $nuevoSaldo];
+    }
+
     public function getStatsMovimientos() {
         $total = $this->conexion->query("SELECT COUNT(*) FROM transacciones")->fetchColumn();
         $este_mes = $this->conexion->query("SELECT COUNT(*) FROM transacciones WHERE MONTH(fecha)=MONTH(NOW()) AND YEAR(fecha)=YEAR(NOW())")->fetchColumn();
         $vol_bizum = $this->conexion->query("SELECT COALESCE(SUM(importe),0) FROM transacciones WHERE tipo='bizum' AND estado='completada'")->fetchColumn();
         $vol_trans = $this->conexion->query("SELECT COALESCE(SUM(importe),0) FROM transacciones WHERE tipo='transferencia' AND estado='completada'")->fetchColumn();
         return compact('total', 'este_mes', 'vol_bizum', 'vol_trans');
-    }
-
-    public function crearNotificacion($usuario_id, $tipo, $contenido) {
-        $sql = "INSERT INTO notificaciones (usuario_id, tipo, contenido, leida, created_at)
-            VALUES (?, ?, ?, 0, NOW())";
-
-        $stmt = $this->conexion->prepare($sql);
-
-        return $stmt->execute([
-            $usuario_id,
-            $tipo,
-            $contenido
-        ]);
     }
 }
 ?>
