@@ -80,7 +80,6 @@ $html = "
       <tr><td>" . ($t['tipo'] === 'bizum' ? 'Teléfono destino' : 'IBAN destino') . "</td><td>{$destino_ref}</td></tr>
       <tr><td>Concepto</td><td>{$concepto}</td></tr>
     </table>
-    <div class='ref-box'>Referencia: {$referencia}</div>
     <div class='footer'>
       EcoBank — Banca Sostenible · Este documento es un comprobante oficial de la operación realizada.
       <br>Para cualquier consulta contacta con soporte@ecobank.es

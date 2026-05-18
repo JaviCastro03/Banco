@@ -20,7 +20,7 @@ if (!isset($_SESSION["idU"])) { $_SESSION["ruta"]="login"; header("Location: ind
 <!-- ══════════════ SIDEBAR ══════════════ -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-        <div class="logo-icon"><img src="views/styles/logo.png" alt="Logo EcoBank" style="width:100%; height:100%; object-fit:contain;"></div>        <div>
+        <div class="logo-icon"><img src="views/styles/logo2.png" alt="Logo EcoBank" style="width:100%; height:100%; object-fit:contain;"></div>        <div>
             <div class="logo-text">EcoBank</div>
             <div class="logo-sub">Banca Sostenible</div>
         </div>
@@ -79,10 +79,10 @@ if (!isset($_SESSION["idU"])) { $_SESSION["ruta"]="login"; header("Location: ind
             <div class="topbar-title" id="topbarTitle">Inicio <span>/ Dashboard</span></div>
         </div>
         <div class="topbar-actions">
-            <button class="btn-notif" id="btnNotif" onclick="toggleNotif()">
-                <i class="bi bi-bell-fill"></i>
-                <span class="notif-badge" id="notifBadge">0</span>
-            </button>
+<!--            <button class="btn-notif" id="btnNotif" onclick="toggleNotif()">-->
+<!--                <i class="bi bi-bell-fill"></i>-->
+<!--                <span class="notif-badge" id="notifBadge">0</span>-->
+<!--            </button>-->
             <div class="user-avatar" style="cursor:pointer" onclick="showSection('perfil',null)" id="topAvatar">??</div>
         </div>
     </header>
