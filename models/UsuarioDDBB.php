@@ -180,7 +180,13 @@ class UsuarioDDBB {
                 VALUES (?, ?, ?, ?, ?, ?, 1)";
         $stmt = $this->conexion->prepare($sql);
         $stmt->execute([$cuenta_id, $numero, $titular, $fecha_cad, $cvv_hash, $tipo]);
-        return ['numero' => $numero, 'cvv' => $cvv, 'fecha_caducidad' => $fecha_cad];
+        return [
+            'numero_tarjeta'  => $numero,
+            'titular'         => $titular,
+            'fecha_caducidad' => $fecha_cad,
+            'tipo'            => $tipo,
+            'cvv'             => $cvv
+        ];
     }
 
     private function generarNumeroTarjeta() {

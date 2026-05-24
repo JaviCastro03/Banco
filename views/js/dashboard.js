@@ -16,12 +16,14 @@ function showSection(name, el) {
     }
     const titles = {inicio:'Inicio <span>/ Dashboard</span>',bizum:'Bizum <span>/ Enviar</span>',transferencia:'Transferencia <span>/ Nueva</span>',historial:'Historial <span>/ Movimientos</span>',grafica:'Análisis <span>/ Gráfica</span>',tarjeta:'Tarjeta <span>/ Mi tarjeta</span>',perfil:'Perfil <span>/ Mi cuenta</span>',simulaciones:'Simulaciones <span>/ Ingresos y Gastos</span>'};
     document.getElementById('topbarTitle').innerHTML = titles[name] || name;
-    if (name === 'inicio')       loadDashboard();
-    if (name === 'historial')    loadHistorial();
-    if (name === 'grafica')      loadGrafica();
-    if (name === 'tarjeta')      loadTarjeta();
-    if (name === 'perfil')       loadPerfil();
-    if (name === 'simulaciones') loadSimulaciones();
+    if (name === 'inicio')        loadDashboard();
+    if (name === 'historial')     loadHistorial();
+    if (name === 'grafica')       loadGrafica();
+    if (name === 'tarjeta')       loadTarjeta();
+    if (name === 'perfil')        loadPerfil();
+    if (name === 'simulaciones')  loadSimulaciones();
+    if (name === 'bizum')         loadBizumRecientes();
+    if (name === 'transferencia') loadTransRecientes();
     document.getElementById('sidebar').classList.remove('open');
 }
 
@@ -369,6 +371,7 @@ function confirmarBizum() {
             document.getElementById('bizumImporte').value='';
             document.getElementById('bizumConcepto').value='';
             loadDashboard();
+            loadBizumRecientes();
         } else showAlert('alertCodBizum',r.mensaje,'error');
     });
 }
@@ -421,6 +424,7 @@ function confirmarTrans() {
             document.getElementById('transImporte').value='';
             document.getElementById('transConcepto').value='';
             loadDashboard();
+            loadTransRecientes();
         } else showAlert('alertCodTrans',r.mensaje,'error');
     });
 }
@@ -627,3 +631,137 @@ document.addEventListener('DOMContentLoaded', ()=>{
         btn.addEventListener('click', ()=>{ setTimeout(loadSimulaciones, 200); });
     });
 });
+
+/* ═══════════════════════════════════════════
+   CONTACTOS RECIENTES — BIZUM
+═══════════════════════════════════════════ */
+function loadBizumRecientes() {
+    ajax({accion: 'ultimosBizum'}, r => {
+        const el = document.getElementById('bizumRecientes');
+        if (!el) return;
+        if (!r.ok || !r.datos || !r.datos.length) {
+            el.innerHTML = '<span style="font-size:12px;color:var(--eco-muted)">Sin contactos recientes.</span>';
+            return;
+        }
+        el.innerHTML = r.datos.map(c => `
+            <button onclick="rellenarBizum('${htmlE(c.telefono_destino)}')"
+                style="display:flex;align-items:center;gap:8px;padding:8px 12px;
+                       border-radius:20px;border:1.5px solid var(--eco-border);
+                       background:var(--eco-white);cursor:pointer;font-size:12px;
+                       font-family:inherit;color:var(--eco-text);transition:all .2s"
+                onmouseover="this.style.borderColor='var(--eco-primary)';this.style.background='var(--eco-pale)'"
+                onmouseout="this.style.borderColor='var(--eco-border)';this.style.background='var(--eco-white)'">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--eco-pale);
+                            display:flex;align-items:center;justify-content:center;
+                            color:var(--eco-primary);font-weight:700;font-size:12px;flex-shrink:0">
+                    ${htmlE((c.nombre_destino||'?').trim().charAt(0).toUpperCase())}
+                </div>
+                <div style="text-align:left">
+                    <div style="font-weight:600">${htmlE(c.nombre_destino||c.telefono_destino)}</div>
+                    <div style="color:var(--eco-muted);font-size:11px">${htmlE(c.telefono_destino)}</div>
+                </div>
+            </button>`).join('');
+    });
+}
+
+function rellenarBizum(telefono) {
+    document.getElementById('bizumTel').value = telefono;
+    document.getElementById('bizumImporte').focus();
+}
+
+/* ═══════════════════════════════════════════
+   CONTACTOS RECIENTES — TRANSFERENCIA
+═══════════════════════════════════════════ */
+function loadTransRecientes() {
+    ajax({accion: 'ultimasTransferencias'}, r => {
+        const el = document.getElementById('transRecientes');
+        if (!el) return;
+        if (!r.ok || !r.datos || !r.datos.length) {
+            el.innerHTML = '<span style="font-size:12px;color:var(--eco-muted)">Sin transferencias recientes.</span>';
+            return;
+        }
+        el.innerHTML = r.datos.map(c => `
+            <button onclick="rellenarTrans('${htmlE(c.iban_destino)}','${htmlE(c.titular_destino)}')"
+                style="display:flex;align-items:center;gap:8px;padding:8px 12px;
+                       border-radius:20px;border:1.5px solid var(--eco-border);
+                       background:var(--eco-white);cursor:pointer;font-size:12px;
+                       font-family:inherit;color:var(--eco-text);transition:all .2s;width:100%"
+                onmouseover="this.style.borderColor='var(--eco-primary)';this.style.background='var(--eco-pale)'"
+                onmouseout="this.style.borderColor='var(--eco-border)';this.style.background='var(--eco-white)'">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--eco-pale);
+                            display:flex;align-items:center;justify-content:center;
+                            color:var(--eco-primary);font-weight:700;font-size:12px;flex-shrink:0">
+                    ${htmlE((c.titular_destino||'?').trim().charAt(0).toUpperCase())}
+                </div>
+                <div style="text-align:left;overflow:hidden">
+                    <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${htmlE(c.titular_destino)}</div>
+                    <div style="color:var(--eco-muted);font-size:11px;font-family:monospace">${htmlE(c.iban_destino.replace(/(.{4})/g,'$1 ').trim())}</div>
+                </div>
+            </button>`).join('');
+    });
+}
+
+function rellenarTrans(iban, titular) {
+    document.getElementById('transIBAN').value    = iban;
+    document.getElementById('transTitular').value = titular;
+    document.getElementById('transImporte').focus();
+}
+
+/* ═══════════════════════════════════════════
+   POLLING — actualización automática
+═══════════════════════════════════════════ */
+let lastSaldo      = null;
+let pollingInterval = null;
+
+function iniciarPolling() {
+    if (pollingInterval) return;
+    ajax({accion: 'getSaldoActual'}, r => {
+        if (r.ok) lastSaldo = parseFloat(r.saldo);
+    });
+    pollingInterval = setInterval(() => {
+        ajax({accion: 'getSaldoActual'}, r => {
+            if (!r.ok) return;
+            const nuevoSaldo = parseFloat(r.saldo);
+            if (lastSaldo !== null && nuevoSaldo !== lastSaldo) {
+                const diferencia = nuevoSaldo - lastSaldo;
+                loadDashboard();
+                loadHistorial();
+                loadNotifs();
+                const secGrafica = document.getElementById('sec-grafica');
+                if (secGrafica && secGrafica.classList.contains('active')) loadGrafica();
+                const secBizum = document.getElementById('sec-bizum');
+                if (secBizum && secBizum.classList.contains('active')) loadBizumRecientes();
+                const secTrans = document.getElementById('sec-transferencia');
+                if (secTrans && secTrans.classList.contains('active')) loadTransRecientes();
+                mostrarToast(diferencia);
+                lastSaldo = nuevoSaldo;
+            }
+            lastSaldo = nuevoSaldo;
+        });
+    }, 5000);
+}
+
+function mostrarToast(diferencia) {
+    const esIngreso = diferencia > 0;
+    const color     = esIngreso ? 'var(--eco-primary)' : '#c0392b';
+    const icono     = esIngreso ? 'bi-arrow-down-circle-fill' : 'bi-arrow-up-circle-fill';
+    const texto     = esIngreso
+        ? `Has recibido +${Math.abs(diferencia).toFixed(2).replace('.',',')} €`
+        : `Pago realizado -${Math.abs(diferencia).toFixed(2).replace('.',',')} €`;
+
+    const notif = document.createElement('div');
+    notif.style.cssText = `
+        position:fixed;bottom:24px;right:24px;z-index:9999;
+        background:${color};color:#fff;
+        padding:14px 20px;border-radius:12px;
+        font-size:13px;font-weight:600;
+        display:flex;align-items:center;gap:10px;
+        box-shadow:0 8px 24px rgba(0,0,0,.2);
+        animation:slideInNotif .3s ease;
+    `;
+    notif.innerHTML = `<i class="bi ${icono}"></i> ${texto}`;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 4000);
+}
+
+document.addEventListener('DOMContentLoaded', iniciarPolling);
