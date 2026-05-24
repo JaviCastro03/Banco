@@ -173,13 +173,28 @@ class UsuarioDDBB {
     public function crearTarjeta($cuenta_id, $titular, $tipo = 'debito') {
         $numero = $this->generarNumeroTarjeta();
         $cvv = str_pad(random_int(0, 999), 3, '0', STR_PAD_LEFT);
-        $cvv_hash = password_hash($cvv, PASSWORD_DEFAULT);
         $fecha_cad = date('Y-m-d', strtotime('+4 years'));
 
-        $sql = "INSERT INTO tarjetas (cuenta_id, numero_tarjeta, titular, fecha_caducidad, cvv_hash, tipo, activa)
-                VALUES (?, ?, ?, ?, ?, ?, 1)";
+        $sql = "INSERT INTO tarjetas (
+                cuenta_id,
+                numero_tarjeta,
+                titular,
+                fecha_caducidad,
+                cvv,
+                tipo,
+                activa
+            ) VALUES (?, ?, ?, ?, ?, ?, 1)";
+
         $stmt = $this->conexion->prepare($sql);
-        $stmt->execute([$cuenta_id, $numero, $titular, $fecha_cad, $cvv_hash, $tipo]);
+        $stmt->execute([
+            $cuenta_id,
+            $numero,
+            $titular,
+            $fecha_cad,
+            $cvv,
+            $tipo
+        ]);
+
         return [
             'numero_tarjeta'  => $numero,
             'titular'         => $titular,

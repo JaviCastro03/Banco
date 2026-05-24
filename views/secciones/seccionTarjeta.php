@@ -64,14 +64,12 @@
 <!-- MODAL DATOS TARJETA -->
 <div class="modal-overlay" id="modalTarjetaDatos">
     <div class="modal-box">
-        <div class="modal-header">
-            <h5>
-                <i class="bi bi-credit-card-fill"></i> Datos de la tarjeta
-            </h5>
-            <button onclick="cerrarModal('modalTarjetaDatos')" class="modal-close">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
+        <button onclick="cerrarModal('modalTarjetaDatos')" class="modal-close">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <h5>
+            <i class="bi bi-credit-card-fill"></i> Datos de la tarjeta
+        </h5>
 
         <div id="modalTarjetaBody"></div>
 
