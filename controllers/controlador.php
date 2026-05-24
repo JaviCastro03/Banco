@@ -214,6 +214,15 @@ if (isset($_POST["ajax"])) {
         $r = $conexion->procesarSimulaciones($_SESSION["idU"]);
         echo json_encode($r); exit;
     }
+
+    if ($accion === "getSaldoActual") {
+        if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
+        $sql = "SELECT saldo FROM cuentas WHERE usuario_id = ? AND activa = 1 LIMIT 1";
+        $stmt = $conexion->getConexion()->prepare($sql);
+        $stmt->execute([$_SESSION["idU"]]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        echo json_encode(["ok"=>true, "saldo"=> $row["saldo"] ?? 0]); exit;
+    }
 }
 
 /* ======================================================

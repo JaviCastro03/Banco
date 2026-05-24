@@ -344,3 +344,8 @@
             .hist-table th:nth-child(4), .hist-table td:nth-child(4),
             .hist-table th:nth-child(5), .hist-table td:nth-child(5) { display: none; }
         }
+
+        @keyframes slideInNotif {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
