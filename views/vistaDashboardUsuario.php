@@ -79,10 +79,10 @@ if (!isset($_SESSION["idU"])) { $_SESSION["ruta"]="login"; header("Location: ind
             <div class="topbar-title" id="topbarTitle">Inicio <span>/ Dashboard</span></div>
         </div>
         <div class="topbar-actions">
-            <button class="btn-notif" id="btnNotif" onclick="toggleNotif()">
-                <i class="bi bi-bell-fill"></i>
-                <span class="notif-badge" id="notifBadge">0</span>
-            </button>
+<!--            <button class="btn-notif" id="btnNotif" onclick="toggleNotif()">-->
+<!--                <i class="bi bi-bell-fill"></i>-->
+<!--                <span class="notif-badge" id="notifBadge">0</span>-->
+<!--            </button>-->
             <div class="user-avatar" style="cursor:pointer" onclick="showSection('perfil',null)" id="topAvatar">??</div>
         </div>
     </header>
