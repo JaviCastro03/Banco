@@ -139,7 +139,7 @@ body{font-family:'DM Sans',sans-serif;min-height:100vh;display:grid;grid-templat
     <?php if(isset($_SESSION["mensaje"])): ?>
     <div class="alert-box">
       <i class="bi bi-exclamation-triangle-fill"></i>
-      <?= htmlspecialchars($_SESSION["mensaje"]) ?>
+      <?= $_SESSION["mensaje"] ?>
     </div>
     <?php unset($_SESSION["mensaje"]); endif; ?>
 

@@ -28,8 +28,8 @@
                             <p style="font-size:12px;color:var(--eco-muted);text-transform:uppercase;font-weight:600;letter-spacing:1px">Añadir rápido</p>
                             <div class="d-flex flex-wrap gap-2">
                                 <button class="sim-quick-btn" onclick="quickGasto('Spotify',10,1)"><i class="bi bi-music-note-beamed"></i> Spotify <small>€10/día</small></button>
-                                <button class="sim-quick-btn" onclick="quickGasto('Luz',0,1)"><i class="bi bi-lightning-charge-fill"></i> Luz <small>random</small></button>
-                                <button class="sim-quick-btn" onclick="quickGasto('Agua',0,1)"><i class="bi bi-droplet-fill"></i> Agua <small>random</small></button>
+                                <button class="sim-quick-btn" onclick="quickGasto('Luz',0,1)"><i class="bi bi-lightning-charge-fill"></i> Luz </button>
+                                <button class="sim-quick-btn" onclick="quickGasto('Agua',0,1)"><i class="bi bi-droplet-fill"></i> Agua </button>
                             </div>
                         </div>
 
