@@ -708,38 +708,9 @@ function rellenarTrans(iban, titular) {
 }
 
 /* ═══════════════════════════════════════════
-   POLLING — actualización automática
+   AUTO-REFRESH — cada 8 segundos
 ═══════════════════════════════════════════ */
-let lastSaldo      = null;
-let pollingInterval = null;
-
-function iniciarPolling() {
-    if (pollingInterval) return;
-    ajax({accion: 'getSaldoActual'}, r => {
-        if (r.ok) lastSaldo = parseFloat(r.saldo);
-    });
-    pollingInterval = setInterval(() => {
-        ajax({accion: 'getSaldoActual'}, r => {
-            if (!r.ok) return;
-            const nuevoSaldo = parseFloat(r.saldo);
-            if (lastSaldo !== null && nuevoSaldo !== lastSaldo) {
-                const diferencia = nuevoSaldo - lastSaldo;
-                loadDashboard();
-                loadHistorial();
-                loadNotifs();
-                const secGrafica = document.getElementById('sec-grafica');
-                if (secGrafica && secGrafica.classList.contains('active')) loadGrafica();
-                const secBizum = document.getElementById('sec-bizum');
-                if (secBizum && secBizum.classList.contains('active')) loadBizumRecientes();
-                const secTrans = document.getElementById('sec-transferencia');
-                if (secTrans && secTrans.classList.contains('active')) loadTransRecientes();
-                mostrarToast(diferencia);
-                lastSaldo = nuevoSaldo;
-            }
-            lastSaldo = nuevoSaldo;
-        });
-    }, 5000);
-}
+let lastSaldo = null;
 
 function mostrarToast(diferencia) {
     const esIngreso = diferencia > 0;
@@ -748,7 +719,6 @@ function mostrarToast(diferencia) {
     const texto     = esIngreso
         ? `Has recibido +${Math.abs(diferencia).toFixed(2).replace('.',',')} €`
         : `Pago realizado -${Math.abs(diferencia).toFixed(2).replace('.',',')} €`;
-
     const notif = document.createElement('div');
     notif.style.cssText = `
         position:fixed;bottom:24px;right:24px;z-index:9999;
@@ -764,4 +734,35 @@ function mostrarToast(diferencia) {
     setTimeout(() => notif.remove(), 4000);
 }
 
-document.addEventListener('DOMContentLoaded', iniciarPolling);
+function iniciarPolling() {
+    setInterval(() => {
+        ajax({accion: 'getDashboard'}, r => {
+            if (!r.ok) return;
+            const nuevoSaldo = parseFloat(r.datos.saldo);
+
+            document.getElementById('statSaldo').textContent    = formatEur(nuevoSaldo);
+            document.getElementById('statIban').textContent     = r.datos.iban ? r.datos.iban.replace(/(.{4})/g,'$1 ').trim() : '—';
+            document.getElementById('statEnviado').textContent  = formatEur(r.resumen.enviado);
+            document.getElementById('statRecibido').textContent = formatEur(r.resumen.recibido);
+            document.getElementById('statNumEnv').textContent   = r.resumen.num_enviadas || 0;
+            renderMovList('lastMovList', r.movimientos);
+
+            if (lastSaldo !== null && nuevoSaldo !== lastSaldo) {
+                const diferencia = nuevoSaldo - lastSaldo;
+                loadHistorial();
+                loadNotifs();
+                const secGrafica = document.getElementById('sec-grafica');
+                if (secGrafica && secGrafica.classList.contains('active')) loadGrafica();
+                mostrarToast(diferencia);
+            }
+            lastSaldo = nuevoSaldo;
+        });
+    }, 8000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    ajax({accion: 'getDashboard'}, r => {
+        if (r.ok) lastSaldo = parseFloat(r.datos.saldo);
+    });
+    iniciarPolling();
+});
