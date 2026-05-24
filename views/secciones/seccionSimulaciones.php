@@ -1,14 +1,14 @@
         <!-- ════════ SIMULACIONES ════════ -->
         <section class="page-section" id="sec-simulaciones">
             <div class="section-header">
-                <h2>Simulación de <span style="color:var(--eco-primary)">Ingresos y Gastos</span></h2>
-                <p>Simula suscripciones, facturas y tu nómina para ver cómo afectan a tu saldo.</p>
+                <h2>Mensualidad de <span style="color:var(--eco-primary)">Ingresos y Gastos</span></h2>
+                <p>suscripciones, facturas y tu nómina.</p>
             </div>
 
             <!-- Botón procesar -->
             <div class="d-flex justify-content-end mb-3">
                 <button class="eco-btn eco-btn-primary" onclick="procesarSimulaciones()">
-                    <i class="bi bi-play-circle-fill"></i> Procesar simulaciones pendientes
+                    <i class="bi bi-play-circle-fill"></i> Procesar operaciones pendientes
                 </button>
             </div>
 

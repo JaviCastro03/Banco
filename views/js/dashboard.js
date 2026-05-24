@@ -14,14 +14,14 @@ function showSection(name, el) {
         const found = document.querySelector('[data-section="'+name+'"]');
         if (found) found.classList.add('active');
     }
-    const titles = {inicio:'Inicio <span>/ Dashboard</span>',bizum:'Bizum <span>/ Enviar</span>',transferencia:'Transferencia <span>/ Nueva</span>',historial:'Historial <span>/ Movimientos</span>',grafica:'Análisis <span>/ Gráfica</span>',tarjeta:'Tarjeta <span>/ Mi tarjeta</span>',perfil:'Perfil <span>/ Mi cuenta</span>',simulaciones:'Simulaciones <span>/ Ingresos y Gastos</span>'};
+    const titles = {inicio:'Inicio <span>/ Dashboard</span>',bizum:'Bizum <span>/ Enviar</span>',transferencia:'Transferencia <span>/ Nueva</span>',historial:'Historial <span>/ Movimientos</span>',grafica:'Análisis <span>/ Gráfica</span>',tarjeta:'Tarjeta <span>/ Mi tarjeta</span>',perfil:'Perfil <span>/ Mi cuenta</span>',simulaciones:'Mensualidades <span>/ Ingresos y Gastos</span>'};
     document.getElementById('topbarTitle').innerHTML = titles[name] || name;
     if (name === 'inicio')        loadDashboard();
     if (name === 'historial')     loadHistorial();
     if (name === 'grafica')       { loadGrafica(); loadDesglose(); }
     if (name === 'tarjeta')       loadTarjeta();
     if (name === 'perfil')        loadPerfil();
-    if (name === 'simulaciones')  loadSimulaciones();
+    if (name === 'mensualidades')  loadSimulaciones();
     if (name === 'bizum')         loadBizumRecientes();
     if (name === 'transferencia') loadTransRecientes();
     document.getElementById('sidebar').classList.remove('open'); const _ov=document.getElementById('sidebarOverlay'); if(_ov) _ov.style.display='none';
@@ -354,6 +354,35 @@ function crearTarjeta() {
     });
 }
 
+function verDatosTarjeta(t) {
+    const exp = t.fecha_caducidad
+        ? t.fecha_caducidad.slice(0,7).replace('-','/').split('/').reverse().join('/')
+        : '??/??';
+
+    document.getElementById('modalTarjetaBody').innerHTML = `
+        <div class="mb-3">
+            <label class="fw-bold">Titular</label>
+            <div class="eco-card p-2 mt-1">${htmlE(t.titular || '')}</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="fw-bold">Número de tarjeta</label>
+            <div class="eco-card p-2 mt-1">${htmlE(t.numero_tarjeta || '')}</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="fw-bold">Fecha de caducidad</label>
+            <div class="eco-card p-2 mt-1">${exp}</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="fw-bold">CVV</label>
+            <div class="eco-card p-2 mt-1">${htmlE(t.cvv || '')}</div>
+        </div>
+    `;
+
+    abrirModal('modalTarjetaDatos');
+}
 /* ═══════════════════════════════════════════
    PERFIL
 ═══════════════════════════════════════════ */
