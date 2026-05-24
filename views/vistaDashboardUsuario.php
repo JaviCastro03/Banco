@@ -49,7 +49,7 @@ if (!isset($_SESSION["idU"])) { $_SESSION["ruta"]="login"; header("Location: ind
             <i class="bi bi-credit-card-2-front-fill"></i><span>Mi Tarjeta</span>
         </div>
         <div class="nav-item" data-section="simulaciones" onclick="showSection('simulaciones',this)">
-            <i class="bi bi-graph-up-arrow"></i><span>Simulaciones</span>
+            <i class="bi bi-graph-up-arrow"></i><span>Mensualidades</span>
         </div>
         <div class="nav-item" data-section="perfil" onclick="showSection('perfil',this)">
             <i class="bi bi-person-circle"></i><span>Mi Perfil</span>
