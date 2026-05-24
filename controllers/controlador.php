@@ -66,6 +66,31 @@ if (isset($_POST["ajax"])) {
         if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
         echo json_encode(["ok"=>true,"historial"=>$conexion->getHistorialUsuario($_SESSION["idU"])]); exit;
     }
+    if ($accion === "ultimosBizum") {
+        if (!isset($_SESSION["idU"])) {
+            echo json_encode(["ok"=>false]);
+            exit;
+        }
+
+        echo json_encode([
+            "ok" => true,
+            "datos" => $conexion->getUltimosBizum($_SESSION["idU"])
+        ]);
+        exit;
+    }
+
+    if ($accion === "ultimasTransferencias") {
+        if (!isset($_SESSION["idU"])) {
+            echo json_encode(["ok"=>false]);
+            exit;
+        }
+
+        echo json_encode([
+            "ok" => true,
+            "datos" => $conexion->getUltimasTransferencias($_SESSION["idU"])
+        ]);
+        exit;
+    }
 
     if ($accion === "getGrafica") {
         if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }

@@ -4,25 +4,29 @@ require_once "../../models/UsuarioDDBB.php";
 require_once "../../models/ConexionDB.php";
 
 session_start();
+
 $conexion = new UsuarioDDBB();
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
-    if(isset($_GET["email"]) && $conexion->setRol($_GET["email"], 1)) {
+    if (isset($_GET["email"]) && $conexion->setRol($_GET["email"], 1)) {
 
-        echo "Verificación exitosa <br>";
-        echo "Serás redirigido en 5 segundos...";
-        $_SESSION["mensaje"] = "<p id='success'>Usuario verificado correctamente</p>";
+        $_SESSION["mensaje"] = "Usuario verificado correctamente";
+        $_SESSION["tipo_mensaje"] = "success";
 
-        header("Refresh: 5; URL=../../index.php");
+        header("Location: ../../index.php");
         exit;
+
     } else {
-        echo "Error al verificar el usuario";
-        header("Refresh: 5; URL=../../index.php");
+
+        $_SESSION["mensaje"] = "Error al verificar el usuario";
+        $_SESSION["tipo_mensaje"] = "error";
+
+        header("Location: ../../index.php");
         exit;
     }
 
 } else {
-    header("location: ../../index.php");
-    exit();
+    header("Location: ../../index.php");
+    exit;
 }

@@ -305,6 +305,48 @@ class UsuarioDDBB {
     /* ======================================================
                             BIZUM
     ====================================================== */
+    public function getUltimosBizum($usuario_id) {
+        $sql = "
+        SELECT
+            b.telefono_destino,
+            b.nombre_destino
+        FROM transacciones t
+        INNER JOIN cuentas c ON t.cuenta_origen_id = c.id
+        INNER JOIN bizum b ON b.transaccion_id = t.id
+        INNER JOIN usuarios u ON u.telefono = b.telefono_destino
+        WHERE c.usuario_id = ?
+        AND t.tipo = 'bizum'
+        AND u.activo = 1
+        GROUP BY b.telefono_destino, b.nombre_destino
+        ORDER BY MAX(t.fecha) DESC
+        LIMIT 5
+    ";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getUltimasTransferencias($usuario_id) {
+        $sql = "
+        SELECT DISTINCT
+            tf.iban_destino,
+            tf.titular_destino
+        FROM transacciones t
+        JOIN cuentas c ON t.cuenta_origen_id = c.id
+        JOIN transferencias tf ON tf.transaccion_id = t.id
+        WHERE c.usuario_id = ?
+        AND t.tipo = 'transferencia'
+        ORDER BY t.fecha DESC
+        LIMIT 5
+    ";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     public function enviarBizum($usuario_id, $telefono_destino, $importe, $concepto = "Bizum") {
         try {
