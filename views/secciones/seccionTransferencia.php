@@ -45,7 +45,7 @@
                 <h6 class="fw-bold mb-2">Información importante</h6>
                 <p style="font-size:13px;color:var(--eco-muted);line-height:1.6">
                     Las transferencias SEPA a otras entidades pueden tardar <strong>1-2 días hábiles</strong>. Para cuentas internas de EcoBank el saldo se actualiza al instante.<br><br>
-                    Para importes superiores a <strong>€500</strong> recibirás un código de verificación adicional en tu email.<br><br>
+
                     <span style="color:#e63946"><i class="bi bi-exclamation-triangle-fill"></i> Verifica siempre el IBAN antes de confirmar.</span>
                 </p>
             </div>
