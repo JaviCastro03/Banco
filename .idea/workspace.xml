@@ -7,7 +7,10 @@
     <list default="true" id="0d605471-9959-4094-a36b-8f2653411b78" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/controllers/controlador.php" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/controlador.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/UsuarioDDBB.php" beforeDir="false" afterPath="$PROJECT_DIR$/models/UsuarioDDBB.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/views/js/dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/views/js/dashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/secciones/seccionTransferencia.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/secciones/seccionTransferencia.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/styles/dashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/views/styles/dashboard.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +75,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "alejandro",
+    "git-widget-placeholder": "Merging luismi",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "C:/xampp/htdocs/banco/views/styles",
     "node.js.detected.package.eslint": "true",
