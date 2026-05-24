@@ -18,17 +18,28 @@ function showSection(name, el) {
     document.getElementById('topbarTitle').innerHTML = titles[name] || name;
     if (name === 'inicio')        loadDashboard();
     if (name === 'historial')     loadHistorial();
-    if (name === 'grafica')       loadGrafica();
+    if (name === 'grafica')       { loadGrafica(); loadDesglose(); }
     if (name === 'tarjeta')       loadTarjeta();
     if (name === 'perfil')        loadPerfil();
     if (name === 'simulaciones')  loadSimulaciones();
     if (name === 'bizum')         loadBizumRecientes();
     if (name === 'transferencia') loadTransRecientes();
-    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar').classList.remove('open'); const _ov=document.getElementById('sidebarOverlay'); if(_ov) _ov.style.display='none';
 }
 
 function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('open');
+    // Overlay para cerrar en móvil
+    let overlay = document.getElementById('sidebarOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'sidebarOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99;display:none';
+        overlay.onclick = () => { sidebar.classList.remove('open'); overlay.style.display='none'; };
+        document.body.appendChild(overlay);
+    }
+    overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
 }
 
 /* ═══════════════════════════════════════════
@@ -49,7 +60,7 @@ function ajax(data, cb) {
 function showAlert(id, msg, type='success') {
     const icons = {success:'check-circle-fill', error:'exclamation-triangle-fill', info:'info-circle-fill'};
     document.getElementById(id).innerHTML = `<div class="eco-alert eco-alert-${type}"><i class="bi bi-${icons[type]}"></i><span>${msg}</span></div>`;
-    if (type==='success') setTimeout(()=>{const el=document.getElementById(id);if(el)el.innerHTML='';},4000);
+    setTimeout(()=>{const el=document.getElementById(id);if(el)el.innerHTML='';},10000);
 }
 
 /* ═══════════════════════════════════════════
@@ -121,25 +132,7 @@ function loadHistorial() {
     });
 }
 
-function renderHistorial(data) {
-    const tbody = document.getElementById('histBody');
-    if(!data.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--eco-muted)">Sin movimientos registrados.</td></tr>';return;}
-    tbody.innerHTML = data.map(m=>{
-        const ent = m.direccion==='entrada';
-        const tipoBadge = m.tipo==='bizum'
-            ? '<span class="tipo-badge tipo-bizum"><i class="bi bi-lightning-charge-fill"></i> Bizum</span>'
-            : '<span class="tipo-badge tipo-trans"><i class="bi bi-bank"></i> Transferencia</span>';
-        const estadoBadge = `<span class="mov-badge ${m.estado}">${m.estado}</span>`;
-        const titulo = m.destinatario || m.concepto || '—';
-        return `<tr>
-      <td>${tipoBadge}</td>
-      <td><div style="font-weight:500;font-size:13px">${htmlE(titulo)}</div><div style="font-size:11px;color:var(--eco-muted)">${htmlE(m.concepto||'')}</div></td>
-      <td style="font-size:12px;white-space:nowrap">${formatFecha(m.fecha)}</td>
-      <td>${estadoBadge}</td>
-      <td style="font-weight:600;${ent?'color:var(--eco-primary)':'color:#e63946'}">${ent?'+':'-'}${formatEur(m.importe)}</td>
-    </tr>`;
-    }).join('');
-}
+// renderHistorial con paginación — definida al final del archivo
 
 function filtrarHistorial() {
     const tipo = document.getElementById('filtroTipo').value;
@@ -147,6 +140,7 @@ function filtrarHistorial() {
     let data = historialData;
     if(tipo) data = data.filter(m=>m.tipo===tipo);
     if(dir)  data = data.filter(m=>m.direccion===dir);
+    histPagina = 1;
     renderHistorial(data);
 }
 
@@ -228,6 +222,86 @@ function cambiarFiltroGrafica(filtro, el) {
 }
 
 /* ═══════════════════════════════════════════
+   DESGLOSE POR TIPO (gráfico sectores)
+═══════════════════════════════════════════ */
+let chartSectores = null;
+let desgloseFiltro = 'total';
+
+function loadDesglose(filtro) {
+    if (filtro) desgloseFiltro = filtro;
+
+    // Actualizar botones
+    document.querySelectorAll('.desglose-btn').forEach(b => {
+        b.classList.toggle('pag-active', b.dataset.filtro === desgloseFiltro);
+    });
+
+    ajax({accion: 'getDesglose', filtro: desgloseFiltro}, r => {
+        if (!r.ok) return;
+        const data = r.desglose || [];
+
+        const categorias = {
+            'bizum_salida':          { label: 'Bizum enviado',           color: '#e63946' },
+            'bizum_entrada':         { label: 'Bizum recibido',          color: '#2d6a4f' },
+            'transferencia_salida':  { label: 'Transferencia enviada',   color: '#f4a261' },
+            'transferencia_entrada': { label: 'Transferencia recibida',  color: '#52b788' },
+        };
+
+        const totales = {};
+        data.forEach(d => {
+            totales[`${d.tipo}_${d.direccion}`] = { total: parseInt(d.total), volumen: parseFloat(d.volumen) };
+        });
+
+        const labels = [], valores = [], colores = [], filas = [];
+        Object.entries(categorias).forEach(([key, cat]) => {
+            if (totales[key]) {
+                labels.push(cat.label);
+                valores.push(totales[key].volumen);
+                colores.push(cat.color);
+                filas.push({ ...cat, total: totales[key].total, volumen: totales[key].volumen });
+            }
+        });
+
+        const sinDatos = document.getElementById('desgloseVacio');
+        if (!valores.length) {
+            if (sinDatos) sinDatos.style.display = 'block';
+            document.getElementById('chartSectores').style.display = 'none';
+            document.getElementById('desgloseTabla').innerHTML = '<div style="color:var(--eco-muted);font-size:13px;padding:20px 0">Sin operaciones en este periodo.</div>';
+            return;
+        }
+        if (sinDatos) sinDatos.style.display = 'none';
+        document.getElementById('chartSectores').style.display = 'block';
+
+        if (chartSectores) chartSectores.destroy();
+        const ctx = document.getElementById('chartSectores').getContext('2d');
+        chartSectores = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{ data: valores, backgroundColor: colores, borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '65%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${formatEur(ctx.raw)}` } }
+                }
+            }
+        });
+
+        const totalVol = filas.reduce((a, f) => a + f.volumen, 0);
+        document.getElementById('desgloseTabla').innerHTML = filas.map(f => `
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--eco-border)">
+                <div style="width:12px;height:12px;border-radius:50%;background:${f.color};flex-shrink:0"></div>
+                <div style="flex:1;font-size:13px;font-weight:500">${f.label}</div>
+                <div style="text-align:right">
+                    <div style="font-size:13px;font-weight:700">${formatEur(f.volumen)}</div>
+                    <div style="font-size:11px;color:var(--eco-muted)">${f.total} op. · ${Math.round(f.volumen/totalVol*100)}%</div>
+                </div>
+            </div>`).join('');
+    });
+}
+
+/* ═══════════════════════════════════════════
    TARJETA
 ═══════════════════════════════════════════ */
 function loadTarjeta() {
@@ -238,78 +312,36 @@ function loadTarjeta() {
 }
 
 function renderTarjeta(t) {
-    const num = t.numero_tarjeta;
+    const num    = t.numero_tarjeta;
     const masked = '**** **** **** ' + num.slice(-4);
-    const exp = t.fecha_caducidad
-        ? t.fecha_caducidad.slice(0,7).replace('-','/').split('/').reverse().join('/')
-        : '??/??';
-
+    const exp    = t.fecha_caducidad ? t.fecha_caducidad.slice(0,7).replace('-','/').split('/').reverse().join('/') : '??/??';
     document.getElementById('cardDisplay').innerHTML = `
     <div class="bank-card">
-      <div class="card-type-badge">${t.tipo || 'débito'}</div>
+      <div class="card-type-badge">${t.tipo||'débito'}</div>
       <div class="card-chip"></div>
       <div class="card-number">${masked}</div>
-
       <div class="card-row">
         <div>
           <div class="card-label-sm">Titular</div>
-          <div class="card-val">${htmlE(t.titular || '')}</div>
+          <div class="card-val">${htmlE(t.titular||'')}</div>
         </div>
-
         <div>
           <div class="card-label-sm">Válida hasta</div>
           <div class="card-val">${exp}</div>
         </div>
-
         <div class="card-brand">VISA</div>
       </div>
     </div>
-
     <div class="mt-3 d-flex gap-2">
       <div class="eco-card p-3 flex-fill text-center">
-        <button class="eco-btn eco-btn-primary" onclick='verDatosTarjeta(${JSON.stringify(t)})'>
-          <i class="bi bi-eye-fill"></i> Ver datos
-        </button>
+        <div style="font-size:11px;color:var(--eco-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">CVV</div>
+        <div style="font-size:20px;font-weight:700;letter-spacing:4px">•••</div>
       </div>
-
       <div class="eco-card p-3 flex-fill text-center">
-        <div style="font-size:11px;color:var(--eco-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">
-          Estado
-        </div>
-        <div style="font-size:13px;font-weight:600;color:var(--eco-primary)">
-          <i class="bi bi-check-circle-fill me-1"></i> Activa
-        </div>
+        <div style="font-size:11px;color:var(--eco-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Estado</div>
+        <div style="font-size:13px;font-weight:600;color:var(--eco-primary)"><i class="bi bi-check-circle-fill me-1"></i> Activa</div>
       </div>
     </div>`;
-}
-function verDatosTarjeta(t) {
-    const exp = t.fecha_caducidad
-        ? t.fecha_caducidad.slice(0,7).replace('-','/').split('/').reverse().join('/')
-        : '??/??';
-
-    document.getElementById('modalTarjetaBody').innerHTML = `
-        <div class="mb-3">
-            <label class="fw-bold">Titular</label>
-            <div class="eco-card p-2 mt-1">${htmlE(t.titular || '')}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="fw-bold">Número de tarjeta</label>
-            <div class="eco-card p-2 mt-1">${htmlE(t.numero_tarjeta || '')}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="fw-bold">Fecha de caducidad</label>
-            <div class="eco-card p-2 mt-1">${exp}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="fw-bold">CVV</label>
-            <div class="eco-card p-2 mt-1">${htmlE(t.cvv || '')}</div>
-        </div>
-    `;
-
-    abrirModal('modalTarjetaDatos');
 }
 
 function crearTarjeta() {
@@ -405,10 +437,10 @@ function confirmarBizum() {
         btn.disabled=false; btn.innerHTML='<i class="bi bi-check2-circle"></i> Confirmar';
         if(r.ok){
             cerrarModal('modalBizum');
-            const pdfBtn = r.transaccion_id
-                ? `<br><a href="controllers/generarPDF.php?id=${r.transaccion_id}" target="_blank" class="eco-btn eco-btn-outline mt-2" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:1.5px solid var(--eco-primary);color:var(--eco-primary);text-decoration:none;background:transparent;margin-top:8px"><i class="bi bi-file-earmark-pdf-fill"></i> Descargar comprobante PDF</a>`
-                : '';
-            document.getElementById('alertBizum').innerHTML = `<div class="alert-eco alert-success"><i class="bi bi-check-circle-fill"></i> ${htmlE(r.mensaje)}${pdfBtn}</div>`;
+            document.getElementById('modalExitoTitulo').textContent = '¡Bizum enviado!';
+            document.getElementById('modalExitoMsg').textContent    = r.mensaje;
+            document.getElementById('modalExitoPdfBtn').href        = r.transaccion_id ? `controllers/generarPDF.php?id=${r.transaccion_id}` : '#';
+            abrirModal('modalExito');
             document.getElementById('bizumTel').value='';
             document.getElementById('bizumImporte').value='';
             document.getElementById('bizumConcepto').value='';
@@ -456,11 +488,10 @@ function confirmarTrans() {
         btn.disabled=false; btn.innerHTML='<i class="bi bi-check2-circle"></i> Confirmar';
         if(r.ok){
             cerrarModal('modalTrans');
-            // Mostrar alerta con botón descargar PDF
-            const pdfBtn = r.transaccion_id
-                ? `<br><a href="controllers/generarPDF.php?id=${r.transaccion_id}" target="_blank" class="eco-btn eco-btn-outline mt-2" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:1.5px solid var(--eco-primary);color:var(--eco-primary);text-decoration:none;background:transparent;margin-top:8px"><i class="bi bi-file-earmark-pdf-fill"></i> Descargar comprobante PDF</a>`
-                : '';
-            document.getElementById('alertTrans').innerHTML = `<div class="alert-eco alert-success"><i class="bi bi-check-circle-fill"></i> ${htmlE(r.mensaje)}${pdfBtn}</div>`;
+            document.getElementById('modalExitoTitulo').textContent = '¡Transferencia enviada!';
+            document.getElementById('modalExitoMsg').textContent    = r.mensaje;
+            document.getElementById('modalExitoPdfBtn').href        = r.transaccion_id ? `controllers/generarPDF.php?id=${r.transaccion_id}` : '#';
+            abrirModal('modalExito');
             document.getElementById('transIBAN').value='';
             document.getElementById('transTitular').value='';
             document.getElementById('transImporte').value='';
@@ -662,7 +693,7 @@ function showSimAlert(msg, type) {
     const colors={success:'#d8f3dc',error:'#fde8ea',info:'#e8f4fd'};
     const textColors={success:'#1a3a2a',error:'#7f1d1d',info:'#1a3a7f'};
     el.innerHTML=`<div style="padding:12px 16px;border-radius:10px;font-size:13px;background:${colors[type]||colors.info};color:${textColors[type]||textColors.info}">${htmlE(msg)}</div>`;
-    setTimeout(()=>{ if(el) el.innerHTML=''; }, 5000);
+    setTimeout(()=>{ if(el) el.innerHTML=''; }, 10000);
 }
 
 // Hook into section loading to load simulaciones when opened
@@ -780,7 +811,7 @@ function iniciarPolling() {
             }
             lastSaldo = nuevoSaldo;
         });
-    }, 5000);
+    }, 10000);
 }
 
 function mostrarToast(diferencia) {
@@ -803,7 +834,85 @@ function mostrarToast(diferencia) {
     `;
     notif.innerHTML = `<i class="bi ${icono}"></i> ${texto}`;
     document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 4000);
+    setTimeout(() => notif.remove(), 10000);
 }
 
 document.addEventListener('DOMContentLoaded', iniciarPolling);
+/* ═══════════════════════════════════════════
+   PAGINACIÓN — helper genérico
+═══════════════════════════════════════════ */
+function renderPaginacion(containerId, total, paginaActual, porPagina, totalPags, onPageChange, onPerPageChange) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    const desde = total === 0 ? 0 : (paginaActual - 1) * porPagina + 1;
+    const hasta  = Math.min(paginaActual * porPagina, total);
+
+    const opciones = [5, 10, 25, 50].map(n =>
+        `<option value="${n}" ${n === porPagina ? 'selected' : ''}>${n}</option>`
+    ).join('');
+
+    let btns = '';
+    if (totalPags > 1) {
+        btns += `<button class="pag-btn" ${paginaActual===1?'disabled':''} onclick="(${onPageChange})(${paginaActual-1})"><i class="bi bi-chevron-left"></i></button>`;
+        const rango = 2;
+        for (let i = 1; i <= totalPags; i++) {
+            if (i === 1 || i === totalPags || (i >= paginaActual - rango && i <= paginaActual + rango)) {
+                btns += `<button class="pag-btn ${i===paginaActual?'pag-active':''}" onclick="(${onPageChange})(${i})">${i}</button>`;
+            } else if (i === paginaActual - rango - 1 || i === paginaActual + rango + 1) {
+                btns += `<span class="pag-dots">…</span>`;
+            }
+        }
+        btns += `<button class="pag-btn" ${paginaActual===totalPags?'disabled':''} onclick="(${onPageChange})(${paginaActual+1})"><i class="bi bi-chevron-right"></i></button>`;
+    }
+
+    el.innerHTML = `
+        <div class="pag-left">
+            <span class="pag-info">${desde}–${hasta} de ${total}</span>
+            <label class="pag-label">Filas:
+                <select class="pag-select" onchange="(${onPerPageChange})(parseInt(this.value))">${opciones}</select>
+            </label>
+        </div>
+        <div class="pag-btns">${btns}</div>`;
+}
+
+/* ═══════════════════════════════════════════
+   PAGINACIÓN — Historial
+═══════════════════════════════════════════ */
+let histPagina   = 1;
+let histPorPagina = 10;
+let histDataCache = [];
+
+function renderHistorial(data) {
+    histDataCache = data;
+    const totalPags = Math.max(1, Math.ceil(data.length / histPorPagina));
+    if (histPagina > totalPags) histPagina = totalPags;
+    const slice = data.slice((histPagina - 1) * histPorPagina, histPagina * histPorPagina);
+
+    const tbody = document.getElementById('histBody');
+    if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--eco-muted)">Sin movimientos registrados.</td></tr>';
+        renderPaginacion('histPaginacion', 0, 1, histPorPagina, 1, ()=>{}, ()=>{});
+        return;
+    }
+    tbody.innerHTML = slice.map(m => {
+        const ent = m.direccion === 'entrada';
+        const tipoBadge = m.tipo === 'bizum'
+            ? '<span class="tipo-badge tipo-bizum"><i class="bi bi-lightning-charge-fill"></i> Bizum</span>'
+            : '<span class="tipo-badge tipo-trans"><i class="bi bi-bank"></i> Transferencia</span>';
+        const estadoBadge = `<span class="mov-badge ${m.estado}">${m.estado}</span>`;
+        const titulo = m.destinatario || m.concepto || '—';
+        return `<tr>
+            <td>${tipoBadge}</td>
+            <td><div style="font-weight:500;font-size:13px">${htmlE(titulo)}</div><div style="font-size:11px;color:var(--eco-muted)">${htmlE(m.concepto||'')}</div></td>
+            <td style="font-size:12px;white-space:nowrap">${formatFecha(m.fecha)}</td>
+            <td>${estadoBadge}</td>
+            <td style="font-weight:600;${ent?'color:var(--eco-primary)':'color:#e63946'}">${ent?'+':'-'}${formatEur(m.importe)}</td>
+        </tr>`;
+    }).join('');
+
+    renderPaginacion('histPaginacion', data.length, histPagina, histPorPagina, totalPags,
+        p => { histPagina = p; renderHistorial(histDataCache); },
+        n => { histPorPagina = n; histPagina = 1; renderHistorial(histDataCache); }
+    );
+}

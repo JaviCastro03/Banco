@@ -215,6 +215,12 @@ if (isset($_POST["ajax"])) {
         echo json_encode($r); exit;
     }
 
+    if ($accion === "getDesglose") {
+        if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
+        $filtro = $_POST["filtro"] ?? "total";
+        echo json_encode(["ok"=>true, "desglose"=>$conexion->getDesglose($_SESSION["idU"], $filtro)]); exit;
+    }
+
     if ($accion === "getSaldoActual") {
         if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
         $datos = $conexion->getDatosUsuario($_SESSION["idU"]);

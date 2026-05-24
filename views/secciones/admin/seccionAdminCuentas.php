@@ -17,7 +17,7 @@
             <div class="position-relative">
                 <i class="bi bi-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--eco-muted);font-size:14px;pointer-events:none"></i>
                 <input type="text" id="adminBuscadorCuentas" class="eco-input" placeholder="Buscar por titular o IBAN..." style="padding-left:40px"
-                    oninput="filtrarCuentasAdmin(this.value)">
+                       oninput="filtrarCuentasAdmin(this.value)">
             </div>
         </div>
     </div>
@@ -26,20 +26,21 @@
         <div style="overflow-x:auto">
             <table class="hist-table" id="tablaAdminCuentas">
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Titular</th>
-                        <th>IBAN</th>
-                        <th>Tipo</th>
-                        <th>Saldo</th>
-                        <th>Estado</th>
-                        <th>Movimientos</th>
-                    </tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Titular</th>
+                    <th>IBAN</th>
+                    <th>Tipo</th>
+                    <th>Saldo</th>
+                    <th>Estado</th>
+                    <th>Movimientos</th>
+                </tr>
                 </thead>
                 <tbody id="tablaAdminCuentasTbody">
-                    <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--eco-muted)">Cargando cuentas...</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--eco-muted)">Cargando cuentas...</td></tr>
                 </tbody>
             </table>
         </div>
+        <div id="cuentasPaginacion" class="pag-container"></div>
     </div>
 </section>

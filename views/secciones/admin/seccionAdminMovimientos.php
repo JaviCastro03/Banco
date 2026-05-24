@@ -47,21 +47,22 @@
 
     <div class="eco-card">
         <div style="overflow-x:auto">
-            <table class="hist-table">
+            <table class="hist-table" id="tablaAdminMovimientos">
                 <thead>
-                    <tr>
-                        <th>Tipo</th>
-                        <th>Concepto / Destinatario</th>
-                        <th>Cuenta origen</th>
-                        <th>Importe</th>
-                        <th>Estado</th>
-                        <th>Fecha</th>
-                    </tr>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Concepto / Destinatario</th>
+                    <th>Cuenta origen</th>
+                    <th>Importe</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                </tr>
                 </thead>
                 <tbody id="tablaAdminMovimientosTbody">
-                    <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--eco-muted)">Cargando movimientos...</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--eco-muted)">Cargando movimientos...</td></tr>
                 </tbody>
             </table>
         </div>
+        <div id="movimientosPaginacion" class="pag-container"></div>
     </div>
 </section>

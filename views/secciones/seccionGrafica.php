@@ -53,4 +53,35 @@
             </div>
         </div>
     </div>
+
+    <!-- ═══ DESGLOSE POR TIPO ═══ -->
+    <div class="row g-4 mt-1">
+        <div class="col-lg-5">
+            <div class="eco-card p-4">
+                <div class="card-title-eco mb-1">Desglose por tipo</div>
+                <div class="card-subtitle-eco mb-3">Distribución de todas tus operaciones</div>
+                <div style="position:relative;height:260px;display:flex;align-items:center;justify-content:center">
+                    <canvas id="chartSectores"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="eco-card p-4 h-100">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+                    <div>
+                        <div class="card-title-eco">Resumen de operaciones</div>
+                        <div class="card-subtitle-eco">Número de transacciones y volumen total</div>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        <button class="pag-btn desglose-btn" data-filtro="dias"    onclick="loadDesglose('dias')">30d</button>
+                        <button class="pag-btn desglose-btn" data-filtro="semanas" onclick="loadDesglose('semanas')">12sem</button>
+                        <button class="pag-btn desglose-btn" data-filtro="meses"   onclick="loadDesglose('meses')">6m</button>
+                        <button class="pag-btn desglose-btn" data-filtro="años"    onclick="loadDesglose('años')">5a</button>
+                        <button class="pag-btn desglose-btn pag-active" data-filtro="total" onclick="loadDesglose('total')">Todo</button>
+                    </div>
+                </div>
+                <div id="desgloseTabla"></div>
+            </div>
+        </div>
+    </div>
 </section>

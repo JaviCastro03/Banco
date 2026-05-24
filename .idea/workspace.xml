@@ -6,10 +6,18 @@
   <component name="ChangeListManager">
     <list default="true" id="0d605471-9959-4094-a36b-8f2653411b78" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/controlador.php" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/controlador.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/UsuarioDDBB.php" beforeDir="false" afterPath="$PROJECT_DIR$/models/UsuarioDDBB.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/secciones/seccionTarjeta.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/secciones/seccionTarjeta.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/js/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/views/js/admin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/js/dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/views/js/dashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/secciones/admin/seccionAdminCuentas.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminCuentas.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/secciones/admin/seccionAdminMovimientos.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminMovimientos.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/secciones/admin/seccionAdminUsuarios.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/secciones/admin/seccionAdminUsuarios.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/secciones/seccionGrafica.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/secciones/seccionGrafica.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/secciones/seccionHistorial.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/secciones/seccionHistorial.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/views/styles/admin.css" beforeDir="false" afterPath="$PROJECT_DIR$/views/styles/admin.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/views/styles/dashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/views/styles/dashboard.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/vistaDashboardUsuario.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/vistaDashboardUsuario.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +82,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "luismi",
+    "git-widget-placeholder": "alejandro",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "C:/xampp/htdocs/banco/views/styles",
     "node.js.detected.package.eslint": "true",

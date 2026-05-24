@@ -33,11 +33,21 @@ function showAdminSection(name, el) {
     if (name === 'cuentas')     cargarCuentasAdmin();
     if (name === 'movimientos') cargarMovimientosAdmin();
 
-    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar').classList.remove('open'); const _ov=document.getElementById('sidebarOverlay'); if(_ov) _ov.style.display='none';
 }
 
 function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('open');
+    let overlay = document.getElementById('sidebarOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'sidebarOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99;display:none';
+        overlay.onclick = () => { sidebar.classList.remove('open'); overlay.style.display='none'; };
+        document.body.appendChild(overlay);
+    }
+    overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
 }
 
 /* ══════════════════════════════════════════
@@ -92,7 +102,7 @@ function showAdminAlert(id, msg, type = 'success') {
     const el = document.getElementById(id);
     if (!el) return;
     el.innerHTML = `<div class="eco-alert eco-alert-${type}"><i class="bi bi-${icons[type]}"></i><span>${msg}</span></div>`;
-    if (type === 'success') setTimeout(() => { if (el) el.innerHTML = ''; }, 4000);
+    setTimeout(() => { if (el) el.innerHTML = ''; }, 10000);
 }
 
 /* ══════════════════════════════════════════
@@ -147,6 +157,44 @@ function cargarResumenAdmin() {
 }
 
 /* ══════════════════════════════════════════
+   PAGINACIÓN — helper genérico
+══════════════════════════════════════════ */
+function renderPaginacion(containerId, total, paginaActual, porPagina, totalPags, onPageChange, onPerPageChange) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    const desde = total === 0 ? 0 : (paginaActual - 1) * porPagina + 1;
+    const hasta  = Math.min(paginaActual * porPagina, total);
+
+    const opciones = [5, 10, 25, 50].map(n =>
+        `<option value="${n}" ${n === porPagina ? 'selected' : ''}>${n}</option>`
+    ).join('');
+
+    let btns = '';
+    if (totalPags > 1) {
+        btns += `<button class="pag-btn" ${paginaActual===1?'disabled':''} onclick="(${onPageChange})(${paginaActual-1})"><i class="bi bi-chevron-left"></i></button>`;
+        const rango = 2;
+        for (let i = 1; i <= totalPags; i++) {
+            if (i === 1 || i === totalPags || (i >= paginaActual - rango && i <= paginaActual + rango)) {
+                btns += `<button class="pag-btn ${i===paginaActual?'pag-active':''}" onclick="(${onPageChange})(${i})">${i}</button>`;
+            } else if (i === paginaActual - rango - 1 || i === paginaActual + rango + 1) {
+                btns += `<span class="pag-dots">…</span>`;
+            }
+        }
+        btns += `<button class="pag-btn" ${paginaActual===totalPags?'disabled':''} onclick="(${onPageChange})(${paginaActual+1})"><i class="bi bi-chevron-right"></i></button>`;
+    }
+
+    el.innerHTML = `
+        <div class="pag-left">
+            <span class="pag-info">${desde}–${hasta} de ${total}</span>
+            <label class="pag-label">Filas:
+                <select class="pag-select" onchange="(${onPerPageChange})(parseInt(this.value))">${opciones}</select>
+            </label>
+        </div>
+        <div class="pag-btns">${btns}</div>`;
+}
+
+/* ══════════════════════════════════════════
    SECCIÓN: USUARIOS
 ══════════════════════════════════════════ */
 function cargarUsuariosAdmin(busqueda = '') {
@@ -157,17 +205,28 @@ function cargarUsuariosAdmin(busqueda = '') {
     });
 }
 
+let usuariosPagina   = 1;
+let usuariosPorPagina = 10;
+let usuariosCache    = [];
+
 function buscarUsuariosAdmin(val) {
+    usuariosPagina = 1;
     cargarUsuariosAdmin(val);
 }
 
 function renderTablaUsuarios(data) {
+    usuariosCache = data;
+    const totalPags = Math.max(1, Math.ceil(data.length / usuariosPorPagina));
+    if (usuariosPagina > totalPags) usuariosPagina = totalPags;
+    const slice = data.slice((usuariosPagina - 1) * usuariosPorPagina, usuariosPagina * usuariosPorPagina);
+
     const tbody = document.getElementById('tablaAdminUsuariosTbody');
     if (!data.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--eco-muted)">No se encontraron usuarios.</td></tr>';
+        renderPaginacion('usuariosPaginacion', 0, 1, usuariosPorPagina, 1, ()=>{}, ()=>{});
         return;
     }
-    tbody.innerHTML = data.map(u => {
+    tbody.innerHTML = slice.map(u => {
         const nombre = htmlE((u.nombre || '').trim());
         const apellidos = htmlE((u.apellidos || '').trim());
         const av = iniAvatar(u.nombre);
@@ -202,6 +261,11 @@ function renderTablaUsuarios(data) {
             </td>
         </tr>`;
     }).join('');
+
+    renderPaginacion('usuariosPaginacion', data.length, usuariosPagina, usuariosPorPagina, totalPags,
+        p => { usuariosPagina = p; renderTablaUsuarios(usuariosCache); },
+        n => { usuariosPorPagina = n; usuariosPagina = 1; renderTablaUsuarios(usuariosCache); }
+    );
 }
 
 /* ── EDITAR USUARIO ── */
@@ -344,22 +408,33 @@ function cargarCuentasAdmin() {
     });
 }
 
+let cuentasPagina    = 1;
+let cuentasPorPagina = 10;
+let cuentasCache     = [];
+
 function filtrarCuentasAdmin(val) {
     const v = val.toLowerCase();
-    const filtradas = todasLasCuentas.filter(c =>
+    cuentasCache = todasLasCuentas.filter(c =>
         (c.titular || '').toLowerCase().includes(v) ||
         (c.iban || '').toLowerCase().includes(v)
     );
-    renderTablaCuentas(filtradas);
+    cuentasPagina = 1;
+    renderTablaCuentas(cuentasCache);
 }
 
 function renderTablaCuentas(data) {
+    cuentasCache = data;
+    const totalPags = Math.max(1, Math.ceil(data.length / cuentasPorPagina));
+    if (cuentasPagina > totalPags) cuentasPagina = totalPags;
+    const slice = data.slice((cuentasPagina - 1) * cuentasPorPagina, cuentasPagina * cuentasPorPagina);
+
     const tbody = document.getElementById('tablaAdminCuentasTbody');
     if (!data.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--eco-muted)">No se encontraron cuentas.</td></tr>';
+        renderPaginacion('cuentasPaginacion', 0, 1, cuentasPorPagina, 1, ()=>{}, ()=>{});
         return;
     }
-    tbody.innerHTML = data.map(c => {
+    tbody.innerHTML = slice.map(c => {
         const saldo = parseFloat(c.saldo || 0);
         const saldoClass = saldo > 0 ? 'saldo-positivo' : 'saldo-cero';
         const estadoBadge = c.activa == 1
@@ -388,6 +463,11 @@ function renderTablaCuentas(data) {
             </td>
         </tr>`;
     }).join('');
+
+    renderPaginacion('cuentasPaginacion', data.length, cuentasPagina, cuentasPorPagina, totalPags,
+        p => { cuentasPagina = p; renderTablaCuentas(cuentasCache); },
+        n => { cuentasPorPagina = n; cuentasPagina = 1; renderTablaCuentas(cuentasCache); }
+    );
 }
 
 /* ══════════════════════════════════════════
@@ -408,22 +488,33 @@ function cargarMovimientosAdmin() {
     });
 }
 
+let movimientosPagina    = 1;
+let movimientosPorPagina = 10;
+let movimientosCache     = [];
+
 function filtrarMovimientosAdmin() {
     const tipo   = document.getElementById('adminFiltroTipo').value;
     const estado = document.getElementById('adminFiltroEstado').value;
     let data = todosLosMovimientos;
     if (tipo)   data = data.filter(m => m.tipo === tipo);
     if (estado) data = data.filter(m => m.estado === estado);
+    movimientosPagina = 1;
     renderTablaMovimientos(data);
 }
 
 function renderTablaMovimientos(data) {
+    movimientosCache = data;
+    const totalPags = Math.max(1, Math.ceil(data.length / movimientosPorPagina));
+    if (movimientosPagina > totalPags) movimientosPagina = totalPags;
+    const slice = data.slice((movimientosPagina - 1) * movimientosPorPagina, movimientosPagina * movimientosPorPagina);
+
     const tbody = document.getElementById('tablaAdminMovimientosTbody');
     if (!data.length) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--eco-muted)">No se encontraron movimientos.</td></tr>';
+        renderPaginacion('movimientosPaginacion', 0, 1, movimientosPorPagina, 1, ()=>{}, ()=>{});
         return;
     }
-    tbody.innerHTML = data.map(m => {
+    tbody.innerHTML = slice.map(m => {
         const tipoBadge = m.tipo === 'bizum'
             ? '<span class="tipo-badge tipo-bizum"><i class="bi bi-lightning-charge-fill"></i> Bizum</span>'
             : '<span class="tipo-badge tipo-trans"><i class="bi bi-bank"></i> Transferencia</span>';
@@ -441,6 +532,11 @@ function renderTablaMovimientos(data) {
             <td style="font-size:12px;white-space:nowrap;color:var(--eco-muted)">${formatFecha(m.fecha)}</td>
         </tr>`;
     }).join('');
+
+    renderPaginacion('movimientosPaginacion', data.length, movimientosPagina, movimientosPorPagina, totalPags,
+        p => { movimientosPagina = p; renderTablaMovimientos(movimientosCache); },
+        n => { movimientosPorPagina = n; movimientosPagina = 1; renderTablaMovimientos(movimientosCache); }
+    );
 }
 
 /* ══════════════════════════════════════════

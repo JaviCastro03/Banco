@@ -19,7 +19,7 @@
             <div class="position-relative">
                 <i class="bi bi-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--eco-muted);font-size:14px;pointer-events:none"></i>
                 <input type="text" id="adminBuscador" class="eco-input" placeholder="Buscar por nombre o email..." style="padding-left:40px"
-                    oninput="buscarUsuariosAdmin(this.value)">
+                       oninput="buscarUsuariosAdmin(this.value)">
             </div>
         </div>
     </div>
@@ -28,20 +28,21 @@
         <div style="overflow-x:auto">
             <table class="hist-table" id="tablaAdminUsuarios">
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Usuario</th>
-                        <th>Email</th>
-                        <th>Teléfono</th>
-                        <th>Dirección</th>
-                        <th>Rol</th>
-                        <th>Acciones</th>
-                    </tr>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Dirección</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
                 </thead>
                 <tbody id="tablaAdminUsuariosTbody">
-                    <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--eco-muted)">Cargando usuarios...</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--eco-muted)">Cargando usuarios...</td></tr>
                 </tbody>
             </table>
         </div>
+        <div id="usuariosPaginacion" class="pag-container"></div>
     </div>
 </section>

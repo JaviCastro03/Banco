@@ -173,28 +173,13 @@ class UsuarioDDBB {
     public function crearTarjeta($cuenta_id, $titular, $tipo = 'debito') {
         $numero = $this->generarNumeroTarjeta();
         $cvv = str_pad(random_int(0, 999), 3, '0', STR_PAD_LEFT);
+        $cvv_hash = password_hash($cvv, PASSWORD_DEFAULT);
         $fecha_cad = date('Y-m-d', strtotime('+4 years'));
 
-        $sql = "INSERT INTO tarjetas (
-                cuenta_id,
-                numero_tarjeta,
-                titular,
-                fecha_caducidad,
-                cvv,
-                tipo,
-                activa
-            ) VALUES (?, ?, ?, ?, ?, ?, 1)";
-
+        $sql = "INSERT INTO tarjetas (cuenta_id, numero_tarjeta, titular, fecha_caducidad, cvv_hash, tipo, activa)
+                VALUES (?, ?, ?, ?, ?, ?, 1)";
         $stmt = $this->conexion->prepare($sql);
-        $stmt->execute([
-            $cuenta_id,
-            $numero,
-            $titular,
-            $fecha_cad,
-            $cvv,
-            $tipo
-        ]);
-
+        $stmt->execute([$cuenta_id, $numero, $titular, $fecha_cad, $cvv_hash, $tipo]);
         return [
             'numero_tarjeta'  => $numero,
             'titular'         => $titular,
@@ -222,9 +207,14 @@ class UsuarioDDBB {
                     t.id, t.tipo, t.importe, t.estado, t.concepto, t.referencia, t.fecha,
                     CASE WHEN t.cuenta_origen_id = c.id THEN 'salida' ELSE 'entrada' END as direccion,
                     CASE
-                        WHEN t.tipo = 'bizum' THEN b.nombre_destino
-                        WHEN t.tipo = 'transferencia' THEN tf.titular_destino
-                        ELSE NULL
+                        WHEN t.cuenta_origen_id = c.id THEN
+                            CASE
+                                WHEN t.tipo = 'bizum' THEN b.nombre_destino
+                                WHEN t.tipo = 'transferencia' THEN tf.titular_destino
+                                ELSE NULL
+                            END
+                        ELSE
+                            CONCAT(uOrigen.nombre, ' ', uOrigen.apellidos)
                     END as destinatario,
                     CASE
                         WHEN t.tipo = 'bizum' THEN b.telefono_destino
@@ -233,6 +223,8 @@ class UsuarioDDBB {
                     END as destino_referencia
                 FROM transacciones t
                 JOIN cuentas c ON (t.cuenta_origen_id = c.id OR t.cuenta_destino_id = c.id)
+                JOIN cuentas cOrigen ON t.cuenta_origen_id = cOrigen.id
+                JOIN usuarios uOrigen ON cOrigen.usuario_id = uOrigen.id
                 LEFT JOIN bizum b ON b.transaccion_id = t.id
                 LEFT JOIN transferencias tf ON tf.transaccion_id = t.id
                 WHERE c.usuario_id = ?
@@ -258,6 +250,31 @@ class UsuarioDDBB {
         $stmt->execute([$usuario_id]);
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
         return $res ?: ['enviado' => 0, 'recibido' => 0, 'num_enviadas' => 0];
+    }
+
+    public function getDesglose($usuario_id, $filtro = 'total') {
+        $intervalos = [
+            'dias'    => '30 DAY',
+            'semanas' => '12 WEEK',
+            'meses'   => '6 MONTH',
+            'años'    => '5 YEAR',
+        ];
+        $where = isset($intervalos[$filtro])
+            ? "AND t.fecha >= DATE_SUB(NOW(), INTERVAL {$intervalos[$filtro]})"
+            : "";
+
+        $sql = "SELECT
+                    t.tipo,
+                    CASE WHEN t.cuenta_origen_id = c.id THEN 'salida' ELSE 'entrada' END as direccion,
+                    COUNT(*) as total,
+                    SUM(t.importe) as volumen
+                FROM transacciones t
+                JOIN cuentas c ON (t.cuenta_origen_id = c.id OR t.cuenta_destino_id = c.id)
+                WHERE c.usuario_id = ? AND t.estado = 'completada' $where
+                GROUP BY t.tipo, direccion";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute([$usuario_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getDatosGrafica($usuario_id, $filtro = 'meses') {
@@ -304,12 +321,19 @@ class UsuarioDDBB {
                     t.id, t.tipo, t.importe, t.concepto, t.fecha, t.estado,
                     CASE WHEN t.cuenta_origen_id = c.id THEN 'salida' ELSE 'entrada' END as direccion,
                     CASE
-                        WHEN t.tipo = 'bizum' THEN b.nombre_destino
-                        WHEN t.tipo = 'transferencia' THEN tf.titular_destino
-                        ELSE NULL
+                        WHEN t.cuenta_origen_id = c.id THEN
+                            CASE
+                                WHEN t.tipo = 'bizum' THEN b.nombre_destino
+                                WHEN t.tipo = 'transferencia' THEN tf.titular_destino
+                                ELSE NULL
+                            END
+                        ELSE
+                            CONCAT(uOrigen.nombre, ' ', uOrigen.apellidos)
                     END as destinatario
                 FROM transacciones t
                 JOIN cuentas c ON (t.cuenta_origen_id = c.id OR t.cuenta_destino_id = c.id)
+                JOIN cuentas cOrigen ON t.cuenta_origen_id = cOrigen.id
+                JOIN usuarios uOrigen ON cOrigen.usuario_id = uOrigen.id
                 LEFT JOIN bizum b ON b.transaccion_id = t.id
                 LEFT JOIN transferencias tf ON tf.transaccion_id = t.id
                 WHERE c.usuario_id = ?

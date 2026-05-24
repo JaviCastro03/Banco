@@ -79,10 +79,10 @@ if (!isset($_SESSION["idU"])) { $_SESSION["ruta"]="login"; header("Location: ind
             <div class="topbar-title" id="topbarTitle">Inicio <span>/ Dashboard</span></div>
         </div>
         <div class="topbar-actions">
-<!--            <button class="btn-notif" id="btnNotif" onclick="toggleNotif()">-->
-<!--                <i class="bi bi-bell-fill"></i>-->
-<!--                <span class="notif-badge" id="notifBadge">0</span>-->
-<!--            </button>-->
+            <!--            <button class="btn-notif" id="btnNotif" onclick="toggleNotif()">-->
+            <!--                <i class="bi bi-bell-fill"></i>-->
+            <!--                <span class="notif-badge" id="notifBadge">0</span>-->
+            <!--            </button>-->
             <div class="user-avatar" style="cursor:pointer" onclick="showSection('perfil',null)" id="topAvatar">??</div>
         </div>
     </header>
@@ -164,6 +164,25 @@ if (!isset($_SESSION["idU"])) { $_SESSION["ruta"]="login"; header("Location: ind
             <button class="eco-btn eco-btn-outline flex-fill" onclick="cerrarModal('modalTrans')">Cancelar</button>
             <button class="eco-btn eco-btn-primary flex-fill" id="btnConfTrans" onclick="confirmarTrans()"><i class="bi bi-check2-circle"></i> Confirmar</button>
         </div>
+    </div>
+</div>
+
+<!-- ══════ MODAL ÉXITO + PDF ══════ -->
+<div class="modal-overlay" id="modalExito">
+    <div class="modal-box" style="text-align:center;max-width:420px">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--eco-pale);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <i class="bi bi-check-circle-fill" style="font-size:32px;color:var(--eco-primary)"></i>
+        </div>
+        <h5 style="margin-bottom:8px" id="modalExitoTitulo">¡Operación completada!</h5>
+        <p style="font-size:13px;color:var(--eco-muted);margin-bottom:24px" id="modalExitoMsg"></p>
+        <a id="modalExitoPdfBtn" href="#" target="_blank"
+           style="display:flex;align-items:center;justify-content:center;gap:8px;
+                   padding:12px 20px;background:var(--eco-primary);color:#fff;
+                   border-radius:10px;font-size:13px;font-weight:600;
+                   text-decoration:none;margin-bottom:12px">
+            <i class="bi bi-file-earmark-pdf-fill"></i> Descargar comprobante PDF
+        </a>
+        <button class="eco-btn eco-btn-outline w-100" onclick="cerrarModal('modalExito')">Cerrar</button>
     </div>
 </div>
 
