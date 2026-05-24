@@ -100,7 +100,11 @@ if (isset($_POST["ajax"])) {
 
     if ($accion === "getTarjeta") {
         if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
-        echo json_encode(["ok"=>true,"tarjeta"=>$conexion->getTarjetaUsuario($_SESSION["idU"])]); exit;
+        $t = $conexion->getTarjetaUsuario($_SESSION["idU"]);
+        if ($t && isset($_SESSION["tarjeta_cvv"])) {
+            $t['cvv'] = $_SESSION["tarjeta_cvv"];
+        }
+        echo json_encode(["ok"=>true,"tarjeta"=>$t]); exit;
     }
 
     if ($accion === "crearTarjeta") {
@@ -109,6 +113,7 @@ if (isset($_POST["ajax"])) {
         if (!$u||!$u['cuenta_id']) { echo json_encode(["ok"=>false,"mensaje"=>"Sin cuenta bancaria."]); exit; }
         $titular = strtoupper(trim($u['nombre'])." ".trim($u['apellidos']));
         $t = $conexion->crearTarjeta($u['cuenta_id'], $titular);
+        $_SESSION["tarjeta_cvv"] = $t['cvv'];
         echo json_encode(["ok"=>true,"tarjeta"=>$t,"mensaje"=>"Tarjeta creada correctamente."]); exit;
     }
 
@@ -219,6 +224,28 @@ if (isset($_POST["ajax"])) {
         if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
         $filtro = $_POST["filtro"] ?? "total";
         echo json_encode(["ok"=>true, "desglose"=>$conexion->getDesglose($_SESSION["idU"], $filtro)]); exit;
+    }
+
+    if ($accion === "solicitarCodigoCVV") {
+        if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
+        $codigo = $conexion->generarCodigoVerificacion($_SESSION["idU"]);
+        enviarCorreoGmail($_SESSION["email"], "Código CVV - EcoBank",
+            "<div style='font-family:sans-serif;padding:20px'>
+            <h2 style='color:#1a3a2a'>Código de verificación CVV</h2>
+            <p>Alguien ha solicitado ver el CVV de tu tarjeta EcoBank.</p>
+            <div style='font-size:36px;font-weight:bold;letter-spacing:10px;color:#2d6a4f;text-align:center;padding:24px;background:#f0f7f4;border-radius:8px;margin:16px 0'>$codigo</div>
+            <p style='color:#888;font-size:12px'>Válido 10 minutos. Si no fuiste tú, ignora este email.</p>
+            </div>");
+        echo json_encode(["ok"=>true, "mensaje"=>"Código enviado a ".$_SESSION["email"]]); exit;
+    }
+
+    if ($accion === "verificarCodigoCVV") {
+        if (!isset($_SESSION["idU"])) { echo json_encode(["ok"=>false]); exit; }
+        if (!$conexion->verificarCodigo($_SESSION["idU"], trim($_POST["codigo"]??""))) {
+            echo json_encode(["ok"=>false, "mensaje"=>"Código incorrecto o caducado."]); exit;
+        }
+        $tarjeta = $conexion->getTarjetaUsuario($_SESSION["idU"]);
+        echo json_encode(["ok"=>true, "cvv"=>$tarjeta["cvv"] ?? null]); exit;
     }
 
     if ($accion === "getSaldoActual") {

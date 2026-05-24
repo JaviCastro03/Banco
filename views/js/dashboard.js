@@ -21,7 +21,7 @@ function showSection(name, el) {
     if (name === 'grafica')       { loadGrafica(); loadDesglose(); }
     if (name === 'tarjeta')       loadTarjeta();
     if (name === 'perfil')        loadPerfil();
-    if (name === 'mensualidades')  loadSimulaciones();
+    if (name === 'simulaciones')  loadSimulaciones();
     if (name === 'bizum')         loadBizumRecientes();
     if (name === 'transferencia') loadTransRecientes();
     document.getElementById('sidebar').classList.remove('open'); const _ov=document.getElementById('sidebarOverlay'); if(_ov) _ov.style.display='none';
@@ -315,6 +315,7 @@ function renderTarjeta(t) {
     const num    = t.numero_tarjeta;
     const masked = '**** **** **** ' + num.slice(-4);
     const exp    = t.fecha_caducidad ? t.fecha_caducidad.slice(0,7).replace('-','/').split('/').reverse().join('/') : '??/??';
+    window._tarjetaActual = t; // guardar para verDatosTarjeta
     document.getElementById('cardDisplay').innerHTML = `
     <div class="bank-card">
       <div class="card-type-badge">${t.tipo||'débito'}</div>
@@ -333,9 +334,9 @@ function renderTarjeta(t) {
       </div>
     </div>
     <div class="mt-3 d-flex gap-2">
-      <div class="eco-card p-3 flex-fill text-center">
-        <div style="font-size:11px;color:var(--eco-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">CVV</div>
-        <div style="font-size:20px;font-weight:700;letter-spacing:4px">•••</div>
+      <div class="eco-card p-3 flex-fill text-center" style="cursor:pointer" onclick="verDatosTarjeta(window._tarjetaActual)">
+        <div style="font-size:11px;color:var(--eco-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Datos</div>
+        <div style="font-size:13px;font-weight:600;color:var(--eco-primary)"><i class="bi bi-eye-fill me-1"></i> Ver datos</div>
       </div>
       <div class="eco-card p-3 flex-fill text-center">
         <div style="font-size:11px;color:var(--eco-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Estado</div>
@@ -354,35 +355,6 @@ function crearTarjeta() {
     });
 }
 
-function verDatosTarjeta(t) {
-    const exp = t.fecha_caducidad
-        ? t.fecha_caducidad.slice(0,7).replace('-','/').split('/').reverse().join('/')
-        : '??/??';
-
-    document.getElementById('modalTarjetaBody').innerHTML = `
-        <div class="mb-3">
-            <label class="fw-bold">Titular</label>
-            <div class="eco-card p-2 mt-1">${htmlE(t.titular || '')}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="fw-bold">Número de tarjeta</label>
-            <div class="eco-card p-2 mt-1">${htmlE(t.numero_tarjeta || '')}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="fw-bold">Fecha de caducidad</label>
-            <div class="eco-card p-2 mt-1">${exp}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="fw-bold">CVV</label>
-            <div class="eco-card p-2 mt-1">${htmlE(t.cvv || '')}</div>
-        </div>
-    `;
-
-    abrirModal('modalTarjetaDatos');
-}
 /* ═══════════════════════════════════════════
    PERFIL
 ═══════════════════════════════════════════ */
@@ -622,7 +594,11 @@ function htmlE(str) {
 document.addEventListener('DOMContentLoaded', ()=>{
     loadDashboard();
     ajax({accion:'getNotificaciones'}, r=>{
-        if(r.ok){ const n=r.no_leidas||0; const b=document.getElementById('notifBadge'); b.textContent=n; b.style.display=n>0?'flex':'none'; }
+        if(r.ok){
+            const n=r.no_leidas||0;
+            const b=document.getElementById('notifBadge');
+            if(b){ b.textContent=n; b.style.display=n>0?'flex':'none'; }
+        }
     });
 });
 /* ═══════════════════════════════════════════
@@ -944,4 +920,131 @@ function renderHistorial(data) {
         p => { histPagina = p; renderHistorial(histDataCache); },
         n => { histPorPagina = n; histPagina = 1; renderHistorial(histDataCache); }
     );
+}
+
+/* ═══════════════════════════════════════════
+   TARJETA — Ver datos + CVV con verificación
+═══════════════════════════════════════════ */
+function verDatosTarjeta(t) {
+    const exp = t.fecha_caducidad
+        ? t.fecha_caducidad.slice(0,7).replace('-','/').split('/').reverse().join('/')
+        : '??/??';
+
+    document.getElementById('modalTarjetaBody').innerHTML =
+        '<div class="mb-3">' +
+        '<label style="font-size:12px;color:var(--eco-muted);text-transform:uppercase;font-weight:600">Titular</label>' +
+        '<div class="eco-card p-2 mt-1" style="font-size:13px">' + htmlE(t.titular || '') + '</div>' +
+        '</div>' +
+        '<div class="mb-3">' +
+        '<label style="font-size:12px;color:var(--eco-muted);text-transform:uppercase;font-weight:600">Número de tarjeta</label>' +
+        '<div class="eco-card p-2 mt-1" style="font-family:monospace;letter-spacing:2px">' + htmlE(t.numero_tarjeta || '') + '</div>' +
+        '</div>' +
+        '<div class="d-flex gap-3 mb-2">' +
+        '<div style="flex:1">' +
+        '<label style="font-size:12px;color:var(--eco-muted);text-transform:uppercase;font-weight:600">Válida hasta</label>' +
+        '<div class="eco-card p-2 mt-1" style="font-size:13px">' + exp + '</div>' +
+        '</div>' +
+        '<div style="flex:1" id="cvvZona">' +
+        '<label style="font-size:12px;color:var(--eco-muted);text-transform:uppercase;font-weight:600">CVV</label>' +
+        '<div id="cvvContenido">' +
+        '<button onclick="pedirCodigoCVV()" class="eco-btn eco-btn-outline w-100 mt-1" style="font-size:12px;padding:8px 12px">' +
+        '<i class="bi bi-shield-lock-fill"></i> Ver CVV' +
+        '</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '<div id="cvvCodigoArea" style="display:none;margin-top:12px;padding:14px;background:var(--eco-pale);border-radius:10px">' +
+        '<div id="alertCVV" style="margin-bottom:8px"></div>' +
+        '<label style="font-size:12px;color:var(--eco-muted);text-transform:uppercase;font-weight:600">Código recibido por email</label>' +
+        '<div style="display:flex;gap:8px;margin-top:8px;justify-content:center" id="codeInputsCVV">' +
+        '<input class="code-input" maxlength="1" type="text" inputmode="numeric" style="width:44px;height:52px;font-size:20px">' +
+        '<input class="code-input" maxlength="1" type="text" inputmode="numeric" style="width:44px;height:52px;font-size:20px">' +
+        '<input class="code-input" maxlength="1" type="text" inputmode="numeric" style="width:44px;height:52px;font-size:20px">' +
+        '<input class="code-input" maxlength="1" type="text" inputmode="numeric" style="width:44px;height:52px;font-size:20px">' +
+        '<input class="code-input" maxlength="1" type="text" inputmode="numeric" style="width:44px;height:52px;font-size:20px">' +
+        '</div>' +
+        '<button onclick="confirmarCodigoCVV()" class="eco-btn eco-btn-primary w-100 mt-3" id="btnConfCVV">' +
+        '<i class="bi bi-check2-circle"></i> Confirmar' +
+        '</button>' +
+        '</div>';
+
+    // Auto-advance inputs
+    const inputs = document.querySelectorAll('#codeInputsCVV .code-input');
+    inputs.forEach((inp, i) => {
+        inp.addEventListener('input', () => {
+            inp.value = inp.value.replace(/[^0-9]/g,'').slice(-1);
+            if (inp.value && i < inputs.length - 1) inputs[i+1].focus();
+        });
+        inp.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus();
+        });
+        inp.addEventListener('paste', e => {
+            e.preventDefault();
+            const paste = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+            inputs.forEach((inp2, j) => { inp2.value = paste[j] || ''; });
+            inputs[Math.min(paste.length, inputs.length) - 1].focus();
+        });
+    });
+
+    abrirModal('modalTarjetaDatos');
+}
+
+function pedirCodigoCVV() {
+    const btn = document.querySelector('#cvvContenido button');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-eco" style="border-top-color:var(--eco-primary);border-color:var(--eco-border)"></span> Enviando...'; }
+    ajax({accion: 'solicitarCodigoCVV'}, r => {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-shield-lock-fill"></i> Ver CVV'; }
+        const area = document.getElementById('cvvCodigoArea');
+        const alrt = document.getElementById('alertCVV');
+        if (r.ok) {
+            area.style.display = 'block';
+            alrt.innerHTML = '<div class="eco-alert eco-alert-info"><i class="bi bi-info-circle-fill"></i><span>' + htmlE(r.mensaje) + '</span></div>';
+            document.querySelectorAll('#codeInputsCVV .code-input')[0].focus();
+        } else {
+            area.style.display = 'block';
+            alrt.innerHTML = '<div class="eco-alert eco-alert-error"><i class="bi bi-exclamation-triangle-fill"></i><span>' + htmlE(r.mensaje) + '</span></div>';
+        }
+    });
+}
+
+function confirmarCodigoCVV() {
+    const codigo = Array.from(document.querySelectorAll('#codeInputsCVV .code-input')).map(i => i.value).join('');
+    if (codigo.length !== 5) {
+        document.getElementById('alertCVV').innerHTML = '<div class="eco-alert eco-alert-error"><i class="bi bi-exclamation-triangle-fill"></i><span>Introduce los 5 dígitos.</span></div>';
+        return;
+    }
+    const btn = document.getElementById('btnConfCVV');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-eco"></span>';
+    ajax({accion: 'verificarCodigoCVV', codigo}, r => {
+        btn.disabled = false; btn.innerHTML = '<i class="bi bi-check2-circle"></i> Confirmar';
+        if (r.ok) {
+            document.getElementById('cvvCodigoArea').style.display = 'none';
+            mostrarCVVTemporal(r.cvv || '•••');
+        } else {
+            document.getElementById('alertCVV').innerHTML = '<div class="eco-alert eco-alert-error"><i class="bi bi-exclamation-triangle-fill"></i><span>' + htmlE(r.mensaje) + '</span></div>';
+        }
+    });
+}
+
+function mostrarCVVTemporal(cvv) {
+    let seg = 15;
+    const contenido = document.getElementById('cvvContenido');
+    const tick = () => {
+        if (!contenido) return;
+        if (seg < 0) {
+            contenido.innerHTML =
+                '<button onclick="pedirCodigoCVV()" class="eco-btn eco-btn-outline w-100 mt-1" style="font-size:12px;padding:8px 12px">' +
+                '<i class="bi bi-shield-lock-fill"></i> Ver CVV' +
+                '</button>';
+            return;
+        }
+        contenido.innerHTML =
+            '<div class="eco-card p-2 mt-1" style="text-align:center">' +
+            '<div style="font-size:24px;font-weight:700;letter-spacing:8px;font-family:monospace;color:var(--eco-primary)">' + htmlE(cvv) + '</div>' +
+            '<div style="font-size:11px;color:var(--eco-muted);margin-top:4px"><i class="bi bi-clock"></i> Se oculta en ' + seg + 's</div>' +
+            '</div>';
+        seg--;
+        setTimeout(tick, 1000);
+    };
+    tick();
 }
