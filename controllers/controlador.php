@@ -312,9 +312,10 @@ function enviarCorreoGmail($email,$asunto,$mensaje) {
     try {
         require './models/vendor/autoload.php';
         $mail=new PHPMailer(true); $mail->isSMTP(); $mail->Host='smtp.gmail.com'; $mail->SMTPAuth=true;
-        $mail->Username='jcastro2gs@gmail.com'; $mail->Password='REMOVED';
+        $cfg = require __DIR__ . '/../models/MailConfig.php';
+        $mail->Username=$cfg['user']; $mail->Password=$cfg['pass'];
         $mail->SMTPSecure=PHPMailer::ENCRYPTION_STARTTLS; $mail->Port=587;
-        $mail->setFrom('jcastro2gs@gmail.com','EcoBank'); $mail->addAddress($email);
+        $mail->setFrom($cfg['user'],'EcoBank'); $mail->addAddress($email);
         $mail->isHTML(true); $mail->Subject=$asunto; $mail->Body=$mensaje; $mail->CharSet='UTF-8';
         $mail->send(); return true;
     } catch(Exception $e) { return false; }
